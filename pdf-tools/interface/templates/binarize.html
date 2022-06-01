@@ -1,0 +1,17 @@
+{% extends "project.html" %}
+
+{% block module %}
+
+    <img id="preview" src="{{ url_for('static', filename=folder+"/1.jpg") }}">
+
+
+<script>
+    var config = {
+          image: 'preview',
+          readOnly: true
+    };
+    var anno = Annotorious.init(config);
+    anno.loadAnnotations("{{ url_for('static', filename="projects/"+project_id+'/annotation.json') }}");
+</script>
+
+{% endblock %}

@@ -1,0 +1,25 @@
+<!doctype html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Annotorious-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='annotorious.min.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='annotorious.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='imageViewer.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='imageViewer.js') }}"></script>
+
+</head>
+
+
+
+<section class="content">
+  <header>
+    {% block header %}{% endblock %}
+  </header>
+  {% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+
+  {% block content %}{% endblock %}
+</section>

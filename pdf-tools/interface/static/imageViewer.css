@@ -1,0 +1,29 @@
+#imgviewer {
+    border: 1px black solid;
+}
+
+#imgviewer > #viewer-controls {
+    width: 100%;
+    height: 5%;
+    display: flex;
+    justify-content: center;
+}
+
+#imgviewer > div:nth-child(2) {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    height: 95%;
+}
+
+
+#imgviewer img {
+    height:95%;
+    width: 100%;
+    object-fit: contain;
+    border: 1px green solid;
+}
+
+.a9s-annotationlayer {
+    height:95%;
+}

@@ -1,0 +1,9 @@
+0. Split pages
+1. Export images (output: pdf_images)
+2. Binarize (output: binary_images)
+3. Find all the gaps (output: whitespace.json)
+4. Classify and count gaps to define:
+    - main text area (non-margins/header)
+    - how we determine a new entry (text left of certain gap OR size of horizontal gap OR combo)
+4. Tesseract (if text found to the left of *left*, mark start of new item. Ignore text above *top*)
++

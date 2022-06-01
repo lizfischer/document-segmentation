@@ -1,0 +1,86 @@
+{% extends "project.html" %}
+
+
+{% block module %}
+
+<form method="post">
+
+    <fieldset>
+        <legend>Ignoring headers, footers, & marginalia</legend>
+        Ignore text <span id="ignore-wrap-0">
+                <select id="ignore-position-0" name="ignore-position-0">
+                    <option value="above">above the first</option>
+                    <option value="below">below the last</option>
+                    <option value="left">left of the first</option>
+                    <option value="right">right of the last</option>
+                </select>
+            <input name="ignore-num-0" type="text" maxlength="2" size="1"> gap(s)
+            with a minimum size of <input name="ignore-width-0" type="text" maxlength="3" size="1"> px
+            and blankness threshold of <input name="ignore-blank-0" type="text" maxlength="4" size="1">
+        </span>
+        <br>
+
+        <span id="ignore-wrap-1" style="display: none;">
+             and
+            <select id="ignore-position-1" name="ignore-position-1">
+                    <option value="above">above the first</option>
+                    <option value="below">below the last</option>
+                    <option value="left">left of the first</option>
+                    <option value="left">right of the last</option>
+                </select>
+            <input name="ignore-num-1" type="text" value="1" maxlength="2" size="1"> gap(s)
+            with a minimum size of <input name="ignore-width-1" type="text" maxlength="3" size="1"> px
+            and blankness threshold of <input name="ignore-blank-1" type="text" maxlength="4" size="1">
+        </span>
+
+        <input type="button" value="+" id="ignore-more">
+    </fieldset>
+
+    <fieldset>
+        <legend>Entry splitting</legend>
+        New entries start after a gap
+        <span id="gap-size-wrap">
+            with a minimum width of <input name="gap-width" type="text" maxlength="3" size="1">
+            and blankness threshold of <input name="gap-blank" type="text" maxlength="4" size="1">
+        </span>.
+        <br>
+        At the top of a page, start a new entry
+         <select name="split-type" id="split-type">
+             <option value="strong">always</option>
+             <option value="weak">never</option>
+             <option value="regex">when the first line of text matches the regular expression: </option>
+        </select>
+        <span id="regex-text" style="display: none;" >/<input name="regex-text" type="text" maxlength="100" size="40"></span>
+
+    </fieldset>
+    <input type="submit" value="Submit">
+</form>
+
+{{ status if status }}
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    $("#split-type").change(function() {
+        if ($(this).val() == "regex") {
+            $("#regex-text").show();
+        } else{
+            $("#regex-text").hide();
+        }
+    });
+
+    $("#ignore-more").click(function(){
+        if ($(this).val() == "+"){
+            $(this).prop("value", "X");
+        } else {
+            $(this).prop("value", "+");
+        }
+
+        $("#ignore-wrap-1").toggle();
+    });
+
+});
+</script>
+{% endblock %}
