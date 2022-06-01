@@ -3,7 +3,7 @@ FROM python:3.8
 WORKDIR /app
 
 RUN apt-get update
-RUN apt-get install ffmpeg libsm6 libxext6 -y
+RUN apt-get install ffmpeg libsm6 libxext6 poppler-utils -y
 
 ENV SQLALCHEMY_TRACK_MODIFICATIONS 0
 

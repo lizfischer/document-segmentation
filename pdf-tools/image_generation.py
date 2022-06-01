@@ -40,20 +40,25 @@ def split_images(project, split_pct=.5):
     return True
 
 
-def export_binary_images(project):
+def export_binary_images(project, task=None):
     print("\n*** Binarizing images... ***")
 
-    for page in project.get_pages():
+    pages = project.get_pages()
+    for i, page in enumerate(pages):
         img_path = page.get_img()
         img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
         (thresh, im_bw) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
         cv2.imwrite(img_path.replace('.jpg', '.tiff'), im_bw)
 
+        if task:
+            task.update_state(state='PROGRESS',
+                              meta={'current': i, 'total': len(pages),
+                                    'status': 'Binarizing images...'})
     project.set_binarized(True)
     return True
 
 
-def export_pdf_images(project):
+def export_pdf_images(project, task=None):
     print("\n*** Converting PDF to images... ****")
 
     input_file = project.get_pdf()
@@ -66,7 +71,7 @@ def export_pdf_images(project):
     # Get pdf info
     info = pdf2image.pdfinfo_from_path(input_file, userpw=None, poppler_path=None)
 
-    # Iterate pages, saving 10 at a time
+    # Iterate pages
     maxPages = info["Pages"]
     i = 1
     for page in range(1, maxPages + 1, 10):
@@ -82,6 +87,11 @@ def export_pdf_images(project):
             width, height = image.size
             page = Page(sequence=i, image=file_name, type="original", width=width, height=height)
             project.add_page(page)
-            i += 1
 
+            if task:
+                task.update_state(state='PROGRESS',
+                      meta={'current': i, 'total': maxPages,
+                            'status': 'Exporting PDF to images...'})
+
+            i += 1
     return output_dir

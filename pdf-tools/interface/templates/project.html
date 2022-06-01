@@ -33,30 +33,18 @@
                 });
 
                 // send ajax POST request to start background job
-               /* $.ajax({
+               $.ajax({
                     type: 'POST',
-                    headers:{
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({"type": "binarize"}),
+                    contentType: 'application/json',
+                    data: JSON.stringify({"type": "binarize", "project_id": "{{project.id}}"}),
                     url: "{{ url_for('test_celery') }}",
                     success: function(data, status, request) {
-                        status_url = request.getResponseHeader('Location');
-                        update_progress(status_url, nanobar, div[0]);
+                        update_progress(data['task_id'], nanobar, div[0]);
                     },
                     error: function() {
                         alert('Unexpected error in ajax');
                     }
-                });*/
-                fetch('{{ url_for('test_celery') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({type: "binarize"}),
-                })
-                .then(response => response.json())
-                .then(data => getStatus(data.task_id));
+                });
             }
          function getStatus(taskID){
              fetch('{{ url_for('task_status', task_id=taskID) }}', {
@@ -87,11 +75,9 @@
 
 
 
-
-
-         function update_progress(status_url, nanobar, status_div) {
+         function update_progress(task_id, nanobar, status_div) {
             // send GET request to status URL
-            $.getJSON(status_url, function(data) {
+            $.getJSON(`/status/${task_id}`, function(data) {
                 // update UI
                 percent = parseInt(data['current'] * 100 / data['total']);
                 nanobar.go(percent);
@@ -100,18 +86,18 @@
                 if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS') {
                     if ('result' in data) {
                         // show result
-                        $(status_div.childNodes[3]).text('Result: ' + data['result']);
+                        $(status_div.childNodes[3]).text(data['result']);
                     }
                     else {
                         // something unexpected happened
-                        $(status_div.childNodes[3]).text('Result: ' + data['state']);
+                        $(status_div.childNodes[3]).text(data['state']);
                     }
                 }
                 else {
                     // rerun in 2 seconds
                     setTimeout(function() {
-                        update_progress(status_url, nanobar, status_div);
-                    }, 2000);
+                        update_progress(task_id, nanobar, status_div);
+                    }, 1000);
                 }
             });
         }

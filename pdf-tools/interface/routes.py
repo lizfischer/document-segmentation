@@ -15,20 +15,44 @@ from interface import tasks, celery
 
 @app.route('/status/<task_id>', methods=['GET'])
 def task_status(task_id):
-    task_result = celery.AsyncResult(task_id)
-    result = {
-        "task_id": task_id,
-        "task_status": task_result.status,
-        "task_result": task_result.result
-    }
-    return jsonify(result), 200
+    task = celery.AsyncResult(task_id)
+    if task.state == 'PENDING':
+        response = {
+            "task_id": task_id,
+            "state": task.state,
+            "current": 0,
+            "total": 1,
+            "status": "Pending..."
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            "task_id": task_id,
+            "state": task.state,
+            "current": task.info.get('current', 0),
+            "total": task.info.get('total', 1),
+            "status": task.info.get('status', '')
+        }
+        if 'result' in task.info:
+            response['result'] = task.info['result']
+    else:
+        # Something went wrong in the task
+        response = {
+            "task_id": task_id,
+            "state": task.state,
+            "current": 1,
+            "total": 1,
+            "status": str(task.info)
+        }
+
+    return jsonify(response )
 
 
 @app.route('/testcelery', methods=['POST'])
 def test_celery():
     content = request.json
-    task_type = content["type"]
-    task = tasks.create_task.delay(int(task_type))
+    project_id = content["project_id"]
+    if content["type"] == "binarize":
+        task = tasks.binarize_task.delay(project_id)
     return jsonify({"task_id": task.id}), 202
 
 # TODO: Decompose me please!
