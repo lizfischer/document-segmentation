@@ -83,6 +83,15 @@ class Threshold(db.Model):
             db.session.commit()
         return default
 
+    @staticmethod
+    def get_by_values(h_width, h_blank, v_width, v_blank):
+        return Threshold.query.filter_by(h_width=h_width, h_blank=h_blank,v_width=v_width, v_blank=v_blank).first()
+
+    @staticmethod
+    def get_by_id(id):
+        return Threshold.query.filter_by(id=id).first()
+
+
 
 class Gap(db.Model):
     id = db.Column(db.Integer, primary_key=True)

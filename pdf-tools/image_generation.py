@@ -40,7 +40,7 @@ def split_images(project, split_pct=.5):
     return True
 
 
-def export_binary_images(project, task=None):
+def export_binary_images(project, task=None, nsteps=1):
     print("\n*** Binarizing images... ***")
 
     pages = project.get_pages()
@@ -52,13 +52,13 @@ def export_binary_images(project, task=None):
 
         if task:
             task.update_state(state='PROGRESS',
-                              meta={'current': i, 'total': len(pages),
+                              meta={'current': i, 'total': len(pages)*nsteps,
                                     'status': 'Binarizing images...'})
     project.set_binarized(True)
     return True
 
 
-def export_pdf_images(project, task=None):
+def export_pdf_images(project, task=None, nsteps=1):
     print("\n*** Converting PDF to images... ****")
 
     input_file = project.get_pdf()
@@ -90,7 +90,7 @@ def export_pdf_images(project, task=None):
 
             if task:
                 task.update_state(state='PROGRESS',
-                      meta={'current': i, 'total': maxPages,
+                      meta={'current': i, 'total': maxPages*nsteps,
                             'status': 'Exporting PDF to images...'})
 
             i += 1

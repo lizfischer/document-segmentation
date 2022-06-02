@@ -25,7 +25,7 @@ def find_gaps_directional(img_binary, direction, width_thresh, blank_thresh=0.02
 
     nonzero_vals = [j for j in thresh if j != 0]
     if not nonzero_vals:
-        raise ValueError("Image is blank")
+        return []
     # average_black = sum(nonzero_vals) / len(nonzero_vals)  # TODO: Question: Handle blank pages -- did above work?
     consecutive_zeroes = find_consecutive_zeroes(thresh)  # find places with multiple 0 cols adjacent (index range)
     data = []

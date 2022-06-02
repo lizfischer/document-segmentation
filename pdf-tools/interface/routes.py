@@ -2,12 +2,11 @@ import io
 import shutil
 import zipfile
 
-from celery.result import AsyncResult
 from flask import render_template, request, redirect, url_for, flash, send_file, jsonify
 
 import parse_rules
 from find_gaps import find_gaps
-from image_generation import export_pdf_images, export_binary_images, split_images
+from image_generation import export_pdf_images, split_images
 from utils import allowed_file, initialize_project, ignore_handler
 from models import *
 from interface import tasks, celery
@@ -47,12 +46,15 @@ def task_status(task_id):
     return jsonify(response )
 
 
-@app.route('/testcelery', methods=['POST'])
-def test_celery():
+@app.route('/delegate', methods=['POST'])
+def delegate_tasks():
     content = request.json
     project_id = content["project_id"]
     if content["type"] == "binarize":
         task = tasks.binarize_task.delay(project_id)
+    if content["type"] == "thresholds":
+        task = tasks.margins_task.delay(project_id, content["data"])
+
     return jsonify({"task_id": task.id}), 202
 
 # TODO: Decompose me please!
@@ -90,6 +92,7 @@ def upload():
             return redirect(url_for('project', project_id=new_project.id))
     return render_template("upload.html")
 
+
 @app.route('/<project_id>/split', methods=['GET', 'POST'])
 def split_file(project_id):
     project = Project.get_by_id(project_id)
@@ -108,39 +111,24 @@ def split_file(project_id):
     return render_template('split.html', project=project, images=image_paths, pct=pct)
 
 
-@app.route('/<project_id>/binarize')
-def binarize(project_id):
+@app.route('/<project_id>/threshold-preview', methods=['GET'])
+def threshold_preview(project_id):  # Potentially replacing the find_margins function
     project = Project.get_by_id(project_id)
 
-    if not project.get_pages():  # If pdf hasn't been converted to images yet
-        export_pdf_images(project)
-    if not project.is_binarized:
-        export_binary_images(project)
+    thresh_id = request.args.get('t')
+    start = int(request.args.get('start'))
+    end = int(request.args.get('end'))
 
-    flash("Successfully binarized images!")
-    return redirect(url_for('project', project_id=project.id))
-
-
-@app.route('/<project_id>/margins', methods=['GET', 'POST'])
-def find_margins(project_id):
-    project = Project.get_by_id(project_id)
-
-    if request.method == 'POST':
-        print("POST")
-        thresh = Threshold(h_width=float(request.form['h_width']), h_blank=float(request.form['h_blank']),
-                           v_blank=float(request.form['v_blank']), v_width=float(request.form['v_width']))
-        find_gaps(project, thresh=thresh)
-    elif not project.has_gaps:
-        thresh = Threshold.get_default()
-        find_gaps(project, thresh=thresh)
-    else:
-        thresh = Threshold.get_default()  # fixme change to get most recent
-
+    thresh = Threshold.get_by_id(thresh_id)
     anno_map = []
-    for page in project.get_pages():
+
+    pages = project.get_pages()
+    pages = pages[start:end]
+
+    for page in pages:
         anno_map.append({"img": page.get_ui_img(), "anno": page.get_whitespace(thresh).annotation})
 
-    return render_template('margins.html', project=project, data=anno_map, thresh=thresh)
+    return render_template('margins.html', project=project, data=anno_map, thresh=thresh, start=start, end=end)
 
 
 @app.route('/<project_id>/simple', methods=['GET', 'POST'])

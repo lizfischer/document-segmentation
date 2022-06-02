@@ -12,7 +12,7 @@ services:
       PYTHONUNBUFFERED: 1
     volumes:
       - ./:/app
-    depends_on: ["redis"]  # gotta have the queue running first!
+    depends_on: ["redis", "celery"]   # gotta have the queue running first!
 
 
   celery:
@@ -46,4 +46,4 @@ services:
       - FLASK_DEBUG=1
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    depends_on: ["web", "redis", "celery"]
+    depends_on: ["redis", "celery"]

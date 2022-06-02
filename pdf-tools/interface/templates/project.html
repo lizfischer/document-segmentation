@@ -7,7 +7,7 @@
     <ul>
         <li><a href="{{ url_for('split_file', project_id=project.id) }}"> Split pages </a></li>
         <li><a href="#" id="binarize"> Binarize </a></li>
-        <li><a href="{{ url_for('find_margins', project_id=project.id) }}"> Margins </a></li>
+        <li><a href="#" id="margins"> Margins </a></li>
         <li><a href="{{ url_for('simple_separate_ui', project_id=project.id) }}"> Simple Separate </a></li>
         <li><a href="{{ url_for('export', project_id=project.id) }}"> Export Entries </a></li>
         <li><a href="{{ url_for('export_txt', project_id=project.id) }}"> Download ZIP of entries as plaintext </a></li>
@@ -18,93 +18,24 @@
     <table id="tasks"></table>
     {% block module %}        {% endblock %}
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/nanobar/0.2.1/nanobar.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script type="text/javascript">
-         function start_long_task() {
-                // add task status elements
-                div = $('<div class="progress"><div></div><div>0%</div><div>...</div><div>&nbsp;</div></div><hr>');
-                $('#progress').append(div);
+         $(function() {
+            $('#binarize').click(function (){ start_long_task("binarize", {{project.id}}, callback=finished_binarize) });
+            $('#margins').click(function (){ start_long_task("thresholds", {{project.id}}, data=null, callback=finished_margins) });
 
-                // create a progress bar
-                var nanobar = new Nanobar({
-                    bg: '#44f',
-                    target: div[0].childNodes[0]
-                });
+        });
 
-                // send ajax POST request to start background job
-               $.ajax({
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({"type": "binarize", "project_id": "{{project.id}}"}),
-                    url: "{{ url_for('test_celery') }}",
-                    success: function(data, status, request) {
-                        update_progress(data['task_id'], nanobar, div[0]);
-                    },
-                    error: function() {
-                        alert('Unexpected error in ajax');
-                    }
-                });
-            }
-         function getStatus(taskID){
-             fetch('{{ url_for('task_status', task_id=taskID) }}', {
-                 method: 'GET',
-                 headers: {
-                    'Content-Type': 'application/json'
-                },
-             })
-             .then(response => response.json())
-             .then(res => {
-                 const html = `
-                      <tr>
-                        <td>${taskID}</td>
-                        <td>${res.task_status}</td>
-                        <td>${res.task_result}</td>
-                      </tr>`;
-                    const newRow = document.getElementById('tasks').insertRow(0);
-                    newRow.innerHTML = html;
-
-                    const taskStatus = res.task_status;
-                    if (taskStatus === 'SUCCESS' || taskStatus === 'FAILURE') return false;
-                    setTimeout(function() {
-                      getStatus(res.task_id);
-                    }, 1000);
-                  })
-                  .catch(err => console.log(err));
+         function finished_binarize(data){
+             console.log("Binarize: " + data["status"]);
          }
 
-
-
-         function update_progress(task_id, nanobar, status_div) {
-            // send GET request to status URL
-            $.getJSON(`/status/${task_id}`, function(data) {
-                // update UI
-                percent = parseInt(data['current'] * 100 / data['total']);
-                nanobar.go(percent);
-                $(status_div.childNodes[1]).text(percent + '%');
-                $(status_div.childNodes[2]).text(data['status']);
-                if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS') {
-                    if ('result' in data) {
-                        // show result
-                        $(status_div.childNodes[3]).text(data['result']);
-                    }
-                    else {
-                        // something unexpected happened
-                        $(status_div.childNodes[3]).text(data['state']);
-                    }
-                }
-                else {
-                    // rerun in 2 seconds
-                    setTimeout(function() {
-                        update_progress(task_id, nanobar, status_div);
-                    }, 1000);
-                }
-            });
-        }
-
-         $(function() {
-            $('#binarize').click(start_long_task);
-        });
+         function finished_margins(data){
+            console.log("Finished preparing margins");
+            const start = data["preview"]["start"];
+            const end = data["preview"]["end"];
+            const url = `/{{project.id}}/threshold-preview?t=${data["thresh_id"]}&start=${start}&end=${end}`;
+            window.location.href = url;
+         }
 
     </script>
 

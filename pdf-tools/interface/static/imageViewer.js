@@ -1,4 +1,4 @@
-function initViewer(images, url_for=true){
+function initViewer(images, start_adjustment=0,url_for=true){
 
     var currentImg = 0;
     var img = new Image();
@@ -41,7 +41,7 @@ function initViewer(images, url_for=true){
     })
     var pgNum = $('<input />', {
         type: 'text',
-        value: currentImg + 1,
+        value: currentImg + 1 + start_adjustment,
         id: 'currentPg',
         size: 2
     });
@@ -52,7 +52,7 @@ function initViewer(images, url_for=true){
     function goTo(n) {
         if (0 <= n && n <= images.length){
             currentImg = n;
-            $('#currentPg').val(currentImg+1);
+            $('#currentPg').val(currentImg+1+start_adjustment);
             $('#activeImage').attr("src", images[currentImg]);
         } else {
             console.log("out of bounds!");

@@ -55,34 +55,37 @@ class Annotation:
 
 def whitespace_to_annotations(data, page):
     annotations = []
-    # First vertical gap, start at end of the gap
-    annotation = Annotation(data["vertical_gaps"][0]["end"], 0, 1, page.height)
-    annotations.append(annotation.json)
 
-    # Middle vertical gaps, give the midpoint
-    for v in data["vertical_gaps"][1:-1]:
-       x = v['start'] + v['width'] / 2
-       annotation = Annotation(x, 0, 1, page.height)
-       annotations.append(annotation.json)
-
-    # Last vertical gap, start at start of the gap
-    if len(data["vertical_gaps"]) > 2 :
-       annotation = Annotation(data["vertical_gaps"][-1]["start"], 0, 1, page.height)
-    annotations.append(annotation.json)
-
-    # First horizontal gap, start at end of the gap
-    annotation = Annotation(0, data["horizontal_gaps"][0]["end"], page.width, 1)
-    annotations.append(annotation.json)
-
-    # Middle horizontal gaps, give the midpoint
-    for h in data["horizontal_gaps"][1:-1]:
-        y = h['start'] + h["width"] / 2
-        annotation = Annotation(0, y,  page.width, 1, text=h["width"])
+    if data["vertical_gaps"]:
+        # First vertical gap, start at end of the gap
+        annotation = Annotation(data["vertical_gaps"][0]["end"], 0, 1, page.height)
         annotations.append(annotation.json)
 
-    # Last horizontal gap, start at start of the gap
-    annotation = Annotation(0, data["horizontal_gaps"][-1]["start"],  page.width, 1)
-    annotations.append(annotation.json)
+        # Middle vertical gaps, give the midpoint
+        for v in data["vertical_gaps"][1:-1]:
+           x = v['start'] + v['width'] / 2
+           annotation = Annotation(x, 0, 1, page.height)
+           annotations.append(annotation.json)
+
+        # Last vertical gap, start at start of the gap
+        if len(data["vertical_gaps"]) > 2 :
+           annotation = Annotation(data["vertical_gaps"][-1]["start"], 0, 1, page.height)
+        annotations.append(annotation.json)
+
+    if data["horizontal_gaps"]:
+        # First horizontal gap, start at end of the gap
+        annotation = Annotation(0, data["horizontal_gaps"][0]["end"], page.width, 1)
+        annotations.append(annotation.json)
+
+        # Middle horizontal gaps, give the midpoint
+        for h in data["horizontal_gaps"][1:-1]:
+            y = h['start'] + h["width"] / 2
+            annotation = Annotation(0, y,  page.width, 1, text=h["width"])
+            annotations.append(annotation.json)
+
+        # Last horizontal gap, start at start of the gap
+        annotation = Annotation(0, data["horizontal_gaps"][-1]["start"],  page.width, 1)
+        annotations.append(annotation.json)
 
     return json.dumps(annotations)
 
@@ -122,7 +125,7 @@ def process_page(im_path, thresholds, viz=False):
 
 
 def find_gaps(project, thresh=None,
-              viz=False, verbose=True):
+              viz=False, verbose=True, preview=None, task=None):
 
     if verbose:
         print("\n*** Detecting margins & whitespace... ***")
@@ -132,7 +135,12 @@ def find_gaps(project, thresh=None,
     if project.has_whitespace(thresh):
         return True
 
-    for page in project.get_pages(): # for every page
+
+    pages = project.get_pages()
+    if preview:
+        pages = pages[preview[0]:preview[1]]
+
+    for i, page in enumerate(pages): # for every page
         image_path = page.get_binary()
         try:
             data = process_page(image_path, thresh, viz=viz) # Try to process the page
@@ -147,9 +155,14 @@ def find_gaps(project, thresh=None,
         for gap in data["horizontal_gaps"]:
             g = Gap(start=gap["start"], end=gap["end"], width=gap["width"], direction="horizontal")
             whitespace.add_gap(g)
+
         whitespace.set_annotation(whitespace_to_annotations(data, page))
 
         page.add_whitespace(whitespace)
-        project.set_gaps(True)
-
+        if not preview:
+            project.set_gaps(True)
+        if task:
+            task.update_state(state='PROGRESS',
+                          meta={'current': i, 'total': len(pages) ,
+                                'status': 'Detecting whitespace...'})
     return True
