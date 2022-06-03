@@ -54,7 +54,8 @@ def delegate_tasks():
         task = tasks.binarize_task.delay(project_id)
     if content["type"] == "thresholds":
         task = tasks.margins_task.delay(project_id, content["data"])
-
+    if content["type"] == "simplesep":
+        task = tasks.simple_sep_task.delay(project_id, content["data"])
     return jsonify({"task_id": task.id}), 202
 
 # TODO: Decompose me please!
@@ -105,6 +106,8 @@ def split_file(project_id):
     if request.method == 'POST':
         pct = float(request.form['split_pct'])
         split_images(project, pct)
+        project.set_gaps(False)
+        project.set_binarized(False)
         flash('Successfully split pages')
 
     image_paths = [page.get_ui_img() for page in project.get_pages()]

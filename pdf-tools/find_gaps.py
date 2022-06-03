@@ -5,7 +5,7 @@ np.set_printoptions(threshold=sys.maxsize)
 
 import whitespace_helpers as ws
 from models import *
-
+from utils import update_status
 
 ##
 # Saves a dataframe to the given directory with the name "whitespace.json"
@@ -125,20 +125,20 @@ def process_page(im_path, thresholds, viz=False):
 
 
 def find_gaps(project, thresh=None,
-              viz=False, verbose=True, preview=None, task=None):
+              viz=False, verbose=True, preview=None,
+              task=None, steps=None):
 
     if verbose:
         print("\n*** Detecting margins & whitespace... ***")
     if not thresh:
         thresh = Threshold.get_default()
 
-    if project.has_whitespace(thresh):
-        return True
-
-
     pages = project.get_pages()
     if preview:
         pages = pages[preview[0]:preview[1]]
+
+    if project.has_whitespace(thresh, pages):
+        return True
 
     for i, page in enumerate(pages): # for every page
         image_path = page.get_binary()
@@ -147,7 +147,7 @@ def find_gaps(project, thresh=None,
         except ValueError:
             continue  # If you can't, skip it
 
-        whitespace = Whitespace(threshold=thresh)
+        whitespace = page.add_whitespace(Whitespace(threshold=thresh))
 
         for gap in data["vertical_gaps"]:
             g = Gap(start=gap["start"], end=gap["end"], width=gap["width"], direction="vertical")
@@ -162,7 +162,6 @@ def find_gaps(project, thresh=None,
         if not preview:
             project.set_gaps(True)
         if task:
-            task.update_state(state='PROGRESS',
-                          meta={'current': i, 'total': len(pages) ,
-                                'status': 'Detecting whitespace...'})
+            update_status(task, 'Detecting whitespace...', i, len(pages), steps)
+
     return True

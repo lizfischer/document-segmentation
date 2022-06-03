@@ -7,6 +7,14 @@ from interface import app
 from models import Project
 
 
+def update_status(task, message, current, total, steps):
+    if steps:
+        message += f' [Step {steps[0]} of {steps[1]}]'
+    task.update_state(state='PROGRESS',
+                  meta={'current': current, 'total': total ,
+                        'status': message})
+
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
@@ -27,7 +35,7 @@ def initialize_project(file):
     return db_project
 
 
-def ignore_handler(project, form_data):
+def ignore_handler(project, form_data, task=None):
     # Handle Ignore Rules
     ignore_rule_1 = {"direction": form_data['ignore-position-0'],
                      "n_gaps": form_data['ignore-num-0'],
@@ -40,5 +48,5 @@ def ignore_handler(project, form_data):
 
     if not ignore_rule_1["min_size"]: ignore_rule_1 = None;
     if not ignore_rule_2["min_size"]: ignore_rule_2 = None;
-    parse_rules.ignore(project, ignore_rule_1, ignore_rule_2)
+    parse_rules.ignore(project, ignore_rule_1, ignore_rule_2, task=task)
 

@@ -9,11 +9,12 @@ from tqdm import tqdm
 from find_gaps import find_gaps
 from models import *
 from tesseract import get_formatted_text
+from utils import update_status
 
 pd.set_option("display.max_rows", 10, "display.max_columns", None)
 
 
-def ignore_helper(project, direction, n_gaps, min_size, blank_thresh):
+def ignore_helper(project, direction, n_gaps, min_size, blank_thresh, task=None, steps=None):
     n_gaps = int(n_gaps)
     min_size = int(min_size)
     blank_thresh = float(blank_thresh)
@@ -25,7 +26,12 @@ def ignore_helper(project, direction, n_gaps, min_size, blank_thresh):
     else:
         thresholds = None
 
-    find_gaps(project, thresh=thresholds, verbose=False)
+
+    if task:
+        update_status(task, 'Ignoring out of bounds data...', 0, 100, steps)
+
+
+    find_gaps(project, thresh=thresholds, verbose=False, task=task)
     whitespace_data = project.get_whitespace(thresholds)
     i = 1
     for ws in whitespace_data:
@@ -51,34 +57,35 @@ def ignore_helper(project, direction, n_gaps, min_size, blank_thresh):
             right = gap.start + 2
             pg.set_ignore("right", right)
 
+        if task:
+            update_status(task, 'Ignoring out of bounds data...', i, len(whitespace_data), steps)
+
         i += 1
-
-
 # rule1 and rule 2 should each take the form {direction: 'above'|'below', n_gaps: #, min_size: #, blank_thresh: #}
 # Returns none for starts, ends, lefts, and rights if no rules specified
-def ignore(project, rule1=None, rule2=None):
+def ignore(project, rule1=None, rule2=None, task=None):
     print("\n***Finding which sections to ignore...***")
     starts, ends, lefts, rights = None, None, None, None
 
     if rule1:
         if rule1["direction"] == "above":
-            starts = ignore_helper(project, "above", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"])
+            starts = ignore_helper(project, "above", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"], task=task)
         elif rule1["direction"] == "below":
-            ends = ignore_helper(project, "below", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"])
+            ends = ignore_helper(project, "below", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"], task=task)
         elif rule1["direction"] == "left":
-            lefts = ignore_helper(project, "left", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"])
+            lefts = ignore_helper(project, "left", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"], task=task)
         elif rule1["direction"] == "right":
-            rights = ignore_helper(project, "right", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"])
+            rights = ignore_helper(project, "right", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"], task=task)
 
     if rule2:
         if rule2["direction"] == "above" and not starts:
-            starts = ignore_helper(project, 1, rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"])
+            starts = ignore_helper(project, 1, rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
         elif rule2["direction"] == "below" and not ends:
-            ends = ignore_helper(project, -1, rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"])
+            ends = ignore_helper(project, -1, rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
         elif rule2["direction"] == "left" and not lefts:
-            lefts = ignore_helper(project, "left", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"])
+            lefts = ignore_helper(project, "left", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
         elif rule2["direction"] == "right" and not rights:
-            rights = ignore_helper(project, "right", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"])
+            rights = ignore_helper(project, "right", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
         else:
             print("Rule 2 ignored because it would replace rule 1")
 
@@ -144,7 +151,7 @@ def simple_separate_val(split, regex=None):
 # option to always start a new entry at the top ("strong split"), or never do so ("weak split")
 # So the options are: Always, never, or first-line regex
 # FIXME: Can I decompose this method more?
-def simple_separate(project, gap_size, blank_thresh, split, regex=None, save_interval=25):
+def simple_separate(project, gap_size, blank_thresh, split, regex=None, task=None, steps=None):
     simple_separate_val(split=split, regex=regex)
 
     print("\n***Removing old entry data...***")
@@ -152,9 +159,10 @@ def simple_separate(project, gap_size, blank_thresh, split, regex=None, save_int
 
     print("\n***Starting simple separate...***")
     print("\n**Finding gaps...**")
+
     # Do gap recognition at the set threshold
-    thresholds = Threshold(h_width=gap_size, h_blank=blank_thresh)
-    find_gaps(project, thresh=thresholds, verbose=False)
+    thresholds = get_or_create(db.session, Threshold, h_width=gap_size, h_blank=blank_thresh)
+    find_gaps(project, thresh=thresholds, verbose=False, task=task)
 
     print("\n**Separating entries gaps...**")
 
@@ -194,9 +202,13 @@ def simple_separate(project, gap_size, blank_thresh, split, regex=None, save_int
         active_entry["text"] += f"\n\n{t}"
         active_entry["pages"].append({"page": pg, "xywh": get_bounds(df_slice)})
 
+    pages = project.get_pages()
+
+    if task:
+        update_status(task, 'Separating... [this is the last step!]', 0, len(pages), steps)
 
     # For each page in numerical order NB: this relies on find_gaps returning a SORTED list
-    for page in tqdm(project.get_pages()):  # NOTE: This is the place to limit pages if desired for testing
+    for i, page in enumerate(pages):  # NOTE: This is the place to limit pages if desired for testing
         n = page.sequence
 
         # OCR the page
@@ -267,6 +279,9 @@ def simple_separate(project, gap_size, blank_thresh, split, regex=None, save_int
         # start a new entry and add the selected text to it
         new_entry(active_selection, n)
         # active_entry = get_formatted_text(active_selection)
+
+        if task:
+            update_status(task, 'Separating...[this is the last step!]', i, len(pages), steps)
 
     save_entry()
     return write_entries(project)

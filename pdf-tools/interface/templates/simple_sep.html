@@ -3,7 +3,7 @@
 
 {% block module %}
 
-<form method="post">
+<form onsubmit="event.preventDefault()" id="SimpleSeparateForm">
 
     <fieldset>
         <legend>Ignoring headers, footers, & marginalia</legend>
@@ -14,9 +14,9 @@
                     <option value="left">left of the first</option>
                     <option value="right">right of the last</option>
                 </select>
-            <input name="ignore-num-0" type="text" maxlength="2" size="1"> gap(s)
-            with a minimum size of <input name="ignore-width-0" type="text" maxlength="3" size="1"> px
-            and blankness threshold of <input name="ignore-blank-0" type="text" maxlength="4" size="1">
+            <input id="ignore-num-0" name="ignore-num-0" type="text" maxlength="2" size="1"> gap(s)
+            with a minimum size of <input id="ignore-width-0" name="ignore-width-0" type="text" maxlength="3" size="1"> px
+            and blankness threshold of <input id="ignore-blank-0" name="ignore-blank-0" type="text" maxlength="4" size="1">
         </span>
         <br>
 
@@ -40,8 +40,8 @@
         <legend>Entry splitting</legend>
         New entries start after a gap
         <span id="gap-size-wrap">
-            with a minimum width of <input name="gap-width" type="text" maxlength="3" size="1">
-            and blankness threshold of <input name="gap-blank" type="text" maxlength="4" size="1">
+            with a minimum width of <input id="gap-width" name="gap-width" type="text" maxlength="3" size="1">
+            and blankness threshold of <input id="gap-blank" name="gap-blank" type="text" maxlength="4" size="1">
         </span>.
         <br>
         At the top of a page, start a new entry
@@ -50,17 +50,40 @@
              <option value="weak">never</option>
              <option value="regex">when the first line of text matches the regular expression: </option>
         </select>
-        <span id="regex-text" style="display: none;" >/<input name="regex-text" type="text" maxlength="100" size="40"></span>
+        <span id="regex-text" style="display: none;" >/<input id="regex-text-input" name="regex-text" type="text" maxlength="100" size="40"></span>
 
     </fieldset>
-    <input type="submit" value="Submit">
+    <button onclick="submitForm()" type="button">Submit</button>
 </form>
 
-{{ status if status }}
+<div id="progress"></div>
 
+<!-- TASK SCRIPT -->
+<script type="text/javascript">
+function submitForm(){
+    const formdata = {
+            "ignore-position-0": $("#ignore-position-0").val() || null,
+            "ignore-num-0": $("#ignore-num-0").val() || null,
+            "ignore-width-0": $("#ignore-width-0").val() || null,
+            "ignore-blank-0": $("#ignore-blank-0").val() || null,
+            "ignore-position-1": $("#ignore-position-1").val() || null,
+            "ignore-num-1": $("#ignore-num-1").val() || null,
+            "ignore-width-1": $("#ignore-width-1").val() || null,
+            "ignore-blank-1": $("#ignore-blank-1").val() || null,
+            "gap-width": $("#gap-width").val(),
+            "gap-blank": $("#gap-blank").val(),
+            "split-type": $("#split-type").val(),
+            "regex-text": $("#regex-text-input").val()
+        }
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    start_long_task("simplesep", {{project.id}}, data=formdata, callback=finished_separate)
+}
 
+function finished_separate(){
+    console.log("Done with separate")
+}
+
+</script>
 <script>
 $(document).ready(function () {
     $("#split-type").change(function() {

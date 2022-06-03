@@ -1,23 +1,19 @@
-from celery.utils.serialization import jsonify
-
-from models import Project, Threshold
-import time
-from interface import celery
-from image_generation import export_pdf_images, export_binary_images, split_images
+from models import Project, Threshold, get_or_create
+from interface import celery, db
+from image_generation import export_pdf_images, export_binary_images
 from find_gaps import find_gaps
+from utils import ignore_handler
+import parse_rules
 
-from flask import request
 
 @celery.task(bind=True)
 def binarize_task(self, project_id):
     project = Project.get_by_id(project_id)
 
-    nsteps = 1
     if not project.get_pages():  # If pdf hasn't been converted to images yet
-        nsteps = 2
-        export_pdf_images(project, task=self, nsteps=nsteps)
+        export_pdf_images(project, task=self)
     if not project.is_binarized:
-        export_binary_images(project, task=self, nsteps=nsteps)
+        export_binary_images(project, task=self)
 
     return {'current': 100, 'total': 100, 'status': 'Done',
             'result': "Binarization successful"}
@@ -32,7 +28,7 @@ def margins_task(self, project_id, specs):
                             'status': 'Preparing threshold preview...'})
 
     if specs:
-        thresh = Threshold(h_width=float(specs['h_width']), h_blank=float(specs['h_blank']),
+        thresh = get_or_create(db.session, Threshold, h_width=float(specs['h_width']), h_blank=float(specs['h_blank']),
                            v_blank=float(specs['v_blank']), v_width=float(specs['v_width']))
         if specs["preview"] == "all":
             preview = None
@@ -56,14 +52,15 @@ def margins_task(self, project_id, specs):
 
 
 @celery.task(bind=True)
-def simple_sep_task(self, project_id):
+def simple_sep_task(self, project_id, data):
     project = Project.get_by_id(project_id)
 
-    if not project.get_pages():  # If pdf hasn't been converted to images yet
-        export_pdf_images(project, task=self)
-    if not project.is_binarized:
-        export_binary_images(project, task=self)
-
+    ignore_handler(project, data, task=self)
+    parse_rules.simple_separate(project,
+                                gap_size=float(data["gap-width"]),
+                                blank_thresh=float(data["gap-blank"]),
+                                split=data["split-type"],
+                                regex=data["regex-text"], task=self)
     return {'current': 100, 'total': 100, 'status': 'Done',
-            'result': "Binarization successful"}
+            'result': "Simple separation successful"}
 

@@ -4,11 +4,6 @@ from interface import app
 from interface import db
 from sqlalchemy.orm import validates
 
-thresholds = db.Table('thresholds',
-                      db.Column('threshold_id', db.Integer, db.ForeignKey('threshold.id'), primary_key=True),
-                      db.Column('whitespace_id', db.Integer, db.ForeignKey('whitespace.id'), primary_key=True)
-                      )
-
 
 def get_or_create(session, model, **kwargs):
     instance = session.query(model).filter_by(**kwargs).first()
@@ -43,6 +38,7 @@ class Entry(db.Model):
     def add_box(self, b):
         db.session.add(self)
         self.boxes.append(b)
+        db.session.commit()
 
     def to_json(self):
         return {"text": self.text,
@@ -121,8 +117,10 @@ class Whitespace(db.Model):
     annotation = db.Column(db.String)
 
     def add_gap(self, g):
-        self.gaps.append(g)
-        db.session.commit()
+        exists = Gap.query.with_parent(self).filter_by(start=g.start, end=g.end, width=g.width, direction=g.direction).first()
+        if not exists:
+            self.gaps.append(g)
+            db.session.commit()
 
     def set_annotation(self, a):
         self.annotation = a
@@ -184,8 +182,13 @@ class Page(db.Model):
                             str(self.image).replace(".jpg", ".tiff"))
 
     def add_whitespace(self, ws):
-        self.whitespaces.append(ws)
-        db.session.commit()
+        space = get_or_create(db.session, Whitespace, threshold_id=ws.threshold.id, page_id=self.id)
+        return space
+        # exists = self.get_whitespace(ws.threshold)
+        # if not exists:
+        #     self.whitespaces.append(ws)
+        #     db.session.commit()
+        # return self.get_whitespace(ws.threshold)
 
     def get_whitespace(self, thresh):
         ws = Whitespace.query.with_parent(self).filter_by(threshold_id=thresh.id).first()
@@ -257,7 +260,7 @@ class Project(db.Model):
         return os.path.join(app.config['UPLOAD_FOLDER'], str(self.id), "binary")
 
     def get_pages(self, original_only=False):
-        if self.is_split and not original_only:
+        if self.is_split and not original_only: # FIXME: Why is self.is_split false when the thing has been split?
             pages = Page.query.with_parent(self).filter(Page.type == "split").all()
         else:
             pages = Page.query.with_parent(self).filter(Page.type == "original").all()
@@ -270,8 +273,15 @@ class Project(db.Model):
             page = Page.query.with_parent(self).filter(Page.type == "original", Page.sequence==n).first()
         return page
 
-    def has_whitespace(self, thresh):
-        return len(self.get_whitespace(thresh)) > 0
+    def has_whitespace(self, thresh, pages=None):
+        ws = self.get_whitespace(thresh)
+        if not pages:
+            return len(ws) > 0
+        existing_pgs = [space.page_id for space in ws]
+        for i, page in enumerate(pages):  # for every page
+            if page.id not in existing_pgs:
+                return False
+        return True
 
     def get_whitespace(self, thresh):
         return Whitespace.query.join(Page, Whitespace.page_id == Page.id)\

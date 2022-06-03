@@ -4,7 +4,7 @@ import cv2
 from tqdm import tqdm
 
 from models import Page
-
+from utils import update_status
 
 def split_images(project, split_pct=.5):
     if project.is_split:
@@ -40,7 +40,7 @@ def split_images(project, split_pct=.5):
     return True
 
 
-def export_binary_images(project, task=None, nsteps=1):
+def export_binary_images(project, task=None, steps=None):
     print("\n*** Binarizing images... ***")
 
     pages = project.get_pages()
@@ -51,14 +51,13 @@ def export_binary_images(project, task=None, nsteps=1):
         cv2.imwrite(img_path.replace('.jpg', '.tiff'), im_bw)
 
         if task:
-            task.update_state(state='PROGRESS',
-                              meta={'current': i, 'total': len(pages)*nsteps,
-                                    'status': 'Binarizing images...'})
+            update_status(task, 'Binarizing images...', i, len(pages), steps)
+
     project.set_binarized(True)
     return True
 
 
-def export_pdf_images(project, task=None, nsteps=1):
+def export_pdf_images(project, task=None, steps=None):
     print("\n*** Converting PDF to images... ****")
 
     input_file = project.get_pdf()
@@ -89,9 +88,7 @@ def export_pdf_images(project, task=None, nsteps=1):
             project.add_page(page)
 
             if task:
-                task.update_state(state='PROGRESS',
-                      meta={'current': i, 'total': maxPages*nsteps,
-                            'status': 'Exporting PDF to images...'})
+                update_status(task, 'Exporting PDF to images...', i, maxPages, steps)
 
             i += 1
     return output_dir

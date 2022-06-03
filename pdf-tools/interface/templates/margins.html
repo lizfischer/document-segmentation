@@ -49,7 +49,9 @@ function submitForm(){
 <!-- IMAGE VIEWER -->
 <div id="imgviewer" style="width:600px; height:800px"></div>
 <script type="text/javascript">
-    function loadPreview(data, start=0){
+    $(document).ready(function() {
+        var data = {{ data|tojson }}
+        var start = {{ start }}
         var images = Array.from(data, x => x["img"])
         initViewer(images, start);
 
@@ -64,13 +66,9 @@ function submitForm(){
 
         activeImage.addEventListener('load', function () {
             var pg = $("#currentPg").val();
-            var anno = JSON.parse(data[pg-1]["anno"])
+            var anno = JSON.parse(data[pg-1-start]["anno"])
             annotorious.setAnnotations(anno);
         });
-    }
-
-    $(document).ready(function() {
-       loadPreview({{ data|tojson }}, {{ start }});
     });
 </script>
 
@@ -95,7 +93,7 @@ $(document).ready(function () {
 function check_length(){
     length = $("#end").val() - $("#start").val();
     console.log(length);
-    if (length > 20) {
+    if (length > 50) {
         $("#warning-long").show();
     } else{
         $("#warning-long").hide();
