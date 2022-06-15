@@ -106,6 +106,21 @@ def delete_project(project_id):
     return redirect(url_for("main"))
 
 
+@app.route('/rename', methods=['POST'])
+def rename_project():
+    content = request.json
+    project_id = content["project_id"]
+    project = Project.get_by_id(project_id)
+    old_name = project.name
+    try:
+        new_name = content['new_name']
+        project.rename(new_name)
+        flash(f"Project name changed from {old_name} to {new_name}")
+    except:
+        flash("Something went wrong")
+    return redirect(url_for("project", project_id=project_id))
+
+
 @app.route('/<project_id>/split', methods=['GET', 'POST'])
 def split_file(project_id):
     project = Project.get_by_id(project_id)
