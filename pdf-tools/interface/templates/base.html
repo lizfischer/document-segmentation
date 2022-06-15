@@ -1,16 +1,27 @@
 <!doctype html>
 <head>
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/nanobar/0.2.1/nanobar.min.js"></script>
-    <!-- Annotorious-->
-    <link rel="stylesheet" href="{{ url_for('static', filename='annotorious.min.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='annotorious.min.js') }}"></script>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='imageViewer.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='imageViewer.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='taskRunner.js') }}"></script>
+    <!-- Basic -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+
+    <!-- Frontend framework -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/spectre.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/spectre-exp.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/spectre-icons.min.css') }}">
+
+    <!-- Annotorious-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/annotorious.min.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/annotorious.min.js') }}"></script>
+
+    <!-- Image viewer -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/imageViewer.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/imageViewer.js') }}"></script>
+
+    <!-- Async tasks -->
+    <script type="text/javascript" src="{{ url_for('static', filename='js/taskRunner.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/nanobar.min.js') }}"></script>
 
 </head>
 
