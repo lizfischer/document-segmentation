@@ -45,12 +45,7 @@ $(document).ready(function(){
 
     var activeImage = document.querySelector('#activeImage');
     activeImage.addEventListener('load', function (){
-        var annoLayer = document.querySelector('.a9s-annotation')
-        if (!annoLayer) {
-           addAnno(pct);
-        } else {
-           changeAnno(pct)
-        }
+        setAnno(pct)
     })
     activeImage.addEventListener('error', function (){
         alert("Something went wrong, please try again")
@@ -59,24 +54,17 @@ $(document).ready(function(){
 
     $("#test-button").click(function (){
         pct = $("#split_pct").val();
-        changeAnno(pct);
+        setAnno(pct);
     });
 
     var anno_id = "#a88b22d0-6106-4872-9435-c78b5e89fede"
-    function addAnno(pct){
+    function setAnno(pct){
         console.log("Adding at " + pct);
-        /*annotorious = Annotorious.init({
-            image: "activeImage",// image element or ID
-            disableEditor: true,
-            allowEmpty: true,
-            readOnly: true
-          });
-        */
         var x = $("#activeImage").get(0).naturalWidth*pct;
         var height = $("#activeImage").get(0).naturalHeight;
         line = "xywh=pixel:"+x+",0,1,"+height;
         console.log(line)
-        annotorious.addAnnotation({
+        annotorious.setAnnotations([{
               "@context": "http://www.w3.org/ns/anno.jsonld",
               "id": anno_id,
               "type": "Annotation",
@@ -88,13 +76,7 @@ $(document).ready(function(){
                   "value": line
                 }
               }
-            });
-    }
-
-    function changeAnno(pct){
-        console.log("Change annotation to " + pct)
-        annotorious.removeAnnotation(anno_id);
-        addAnno(pct);
+            }]);
     }
 
     // Prevent enter from submitting form

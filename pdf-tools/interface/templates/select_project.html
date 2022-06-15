@@ -1,11 +1,16 @@
 {% extends "base.html" %}
 
+{% block header_center %}
+    <h1>Select a project</h1>
+{% endblock %}
+
 {% block content %}
-<h1>Select a project</h1>
-<ul>
-    {% for p in projects %}
-        <li><a href="{{ url_for('project', project_id = p.id) }}">{{ p.name }}</a> </li>
-    {% endfor %}
-</ul>
-<a href="{{ url_for('upload') }}">New Project</a>
+
+    <a class="btn" href="{{ url_for('upload') }}">New Project</a>
+
+    <ul class="project-list">
+        {% for p in projects %}
+            <li class="project"><a href="{{ url_for('project', project_id = p.id) }}">{{ p.name }}</a> </li>
+        {% endfor %}
+    </ul>
 {% endblock %}

@@ -30,7 +30,7 @@ class BoundingBox(db.Model):
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
-    project = db.relationship('Project', backref=db.backref('entries'), lazy=True)
+    project = db.relationship('Project', backref=db.backref('entries', cascade='all,delete'), lazy=True)
 
     text = db.Column(db.String)
     boxes = db.relationship('BoundingBox', backref='entry', cascade="all,delete", lazy=True)
@@ -322,3 +322,6 @@ class Project(db.Model):
         db.session.delete(project)
         db.session.commit()
 
+    def rename(self, new_name):
+        self.name = new_name
+        db.session.commit()

@@ -27,13 +27,19 @@
 
 
 
-<section class="content">
-  <header>
-    {% block header %}{% endblock %}
-  </header>
+<div class="container">
+
+    <header class="navbar">
+        <section class="navbar-section">{% block header_left %}{% endblock %}</section>
+        <section class="navbar-center">{% block header_center %}{% endblock %}</section>
+        <section class="navbar-section">{% block header_right %}{% endblock %}</section>
+        {% block header %}{% endblock %}
+    </header>
+
   {% for message in get_flashed_messages() %}
     <div class="flash">{{ message }}</div>
   {% endfor %}
 
   {% block content %}{% endblock %}
-</section>
+
+</div>
