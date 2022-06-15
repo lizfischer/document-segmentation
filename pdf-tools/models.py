@@ -316,3 +316,9 @@ class Project(db.Model):
             with open(os.path.join(directory, f"{self.name}_entry-{i}.txt"), 'w') as f:
                 f.write(self.entries[i].text)
         return directory
+
+    def delete(self):
+        project = Project.query.filter_by(id=self.id).first()
+        db.session.delete(project)
+        db.session.commit()
+

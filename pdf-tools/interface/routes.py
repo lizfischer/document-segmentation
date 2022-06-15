@@ -94,6 +94,18 @@ def upload():
     return render_template("upload.html")
 
 
+@app.route('/<project_id>/delete', methods=['GET'])
+def delete_project(project_id):
+    project = Project.get_by_id(project_id)
+    name = project.name
+    try:
+        project.delete()
+        flash(f"Successfully deleted {name}")
+    except:
+        flash("Something went wrong")
+    return redirect(url_for("main"))
+
+
 @app.route('/<project_id>/split', methods=['GET', 'POST'])
 def split_file(project_id):
     project = Project.get_by_id(project_id)
