@@ -31,8 +31,9 @@
 
 </div>
 {% else %} <!-- TODO: FINISH THIS!!! -->
-    <p>Look good?</p>
-    <p>Redo...</p>
+    <a class="btn p-centered m-2" href="{{ url_for('split_file', project_id=project.id, redo=True)}}"> <i class="fa-solid fa-rotate-left"></i>Redo...</a>
+    <a class="btn btn-primary p-centered m-2" href="{{ url_for('binarize', project_id=project.id) }}">Looking good? Next step <i class="fa-solid fa-arrow-right"></i></a>
+
 {% endif %}
 
 <div id="progress"></div>

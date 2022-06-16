@@ -330,3 +330,12 @@ class Project(db.Model):
     def rename(self, new_name):
         self.name = new_name
         db.session.commit()
+
+    def clear_split(self):
+        pages = self.get_pages()
+        project_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(self.id))
+        for p in pages:
+            os.remove(p.get_img())
+            db.session.delete(p)
+        self.is_split = False
+        db.session.commit()

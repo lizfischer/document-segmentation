@@ -141,13 +141,17 @@ def rename_project():
 def split_file(project_id):
     project = Project.get_by_id(project_id)
 
+    confirm = request.args.get('confirm')
+    redo = request.args.get('redo')
+    if redo:
+        project.clear_split()
+
     pct = .5
     pages = project.get_pages(original_only=True)
 
     if len(pages) == 0:  # If pdf hasn't been converted to images yet
         export_pdf_images(project)
 
-    confirm = request.args.get('confirm')
 
     image_paths = [page.get_ui_img() for page in project.get_pages()]
     return render_template('split.html', project=project, images=image_paths, pct=pct, confirm=confirm)

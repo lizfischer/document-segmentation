@@ -7,7 +7,7 @@ from interface import app
 from models import Project
 
 
-def update_status(task, message, current, total, steps):
+def update_status(task, message, current, total, steps=None):
     if steps:
         message += f' [Step {steps[0]} of {steps[1]}]'
     task.update_state(state='PROGRESS',
