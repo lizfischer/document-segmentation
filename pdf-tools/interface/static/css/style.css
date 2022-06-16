@@ -10,7 +10,7 @@
     height: 1em;
     margin: 10px;
 }
-.project-name-wrap #rename-btn > img {
+.project-name-wrap #rename-btn > i {
     height: 1em;
     cursor: pointer;
 }
