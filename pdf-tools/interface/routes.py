@@ -57,6 +57,8 @@ def task_status(task_id):
 def delegate_tasks():
     content = request.json
     project_id = content["project_id"]
+    if content["type"] == "split":
+        task = tasks.split_task.delay(project_id, content["data"])
     if content["type"] == "binarize":
         task = tasks.binarize_task.delay(project_id)
     if content["type"] == "thresholds":
@@ -135,7 +137,7 @@ def rename_project():
     return redirect(url_for("project", project_id=project_id))
 
 
-@app.route('/<project_id>/split', methods=['GET', 'POST'])
+@app.route('/<project_id>/split', methods=['GET'])
 def split_file(project_id):
     project = Project.get_by_id(project_id)
 
@@ -144,15 +146,11 @@ def split_file(project_id):
 
     if len(pages) == 0:  # If pdf hasn't been converted to images yet
         export_pdf_images(project)
-    if request.method == 'POST':
-        pct = float(request.form['split_pct'])/100
-        split_images(project, pct)
-        project.set_gaps(False)
-        project.set_binarized(False)
-        flash('Successfully split pages', "success")
+
+    confirm = request.args.get('confirm')
 
     image_paths = [page.get_ui_img() for page in project.get_pages()]
-    return render_template('split.html', project=project, images=image_paths, pct=pct)
+    return render_template('split.html', project=project, images=image_paths, pct=pct, confirm=confirm)
 
 
 

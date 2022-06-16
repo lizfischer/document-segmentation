@@ -6,11 +6,25 @@
 
 {% block content %}
 
-    <a class="btn" href="{{ url_for('upload') }}">New Project</a>
+    {% if projects|length > 0 %}
+        <a class="btn" href="{{ url_for('upload') }}">New Project</a>
 
-    <ul class="project-list">
-        {% for p in projects %}
-            <li class="project"><a href="{{ url_for('project', project_id = p.id) }}">{{ p.name }}</a> </li>
-        {% endfor %}
-    </ul>
+        <ul class="project-list">
+            {% for p in projects %}
+                <li class="project"><a href="{{ url_for('project', project_id = p.id) }}">{{ p.name }}</a> </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="empty">
+          <div class="empty-icon">
+            <i class="icon icon-people"></i>
+          </div>
+          <p class="empty-title h5">You have no projects</p>
+          <p class="empty-subtitle">Click the button to start a new project.</p>
+          <div class="empty-action">
+             <a class="btn btn-primary" href="{{ url_for('upload') }}">New Project</a>
+          </div>
+        </div>
+    {% endif %}
+
 {% endblock %}

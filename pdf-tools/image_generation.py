@@ -6,12 +6,13 @@ from tqdm import tqdm
 from models import Page
 from utils import update_status
 
-def split_images(project, split_pct=.5):
+def split_images(project, split_pct=.5, task=None, steps=None):
     if project.is_split:
         project.remove_split_pages()
 
     seq = 1
-    for page in project.get_pages(original_only=True):
+    pages = project.get_pages(original_only=True)
+    for i, page in enumerate(pages):
         path = pathlib.Path(page.get_img())
         name = str(path.name)
         print(path)
@@ -36,6 +37,9 @@ def split_images(project, split_pct=.5):
         project.add_page(b_half)
 
         seq += 2
+        if task:
+            update_status(task, 'Splitting images...', i, len(pages), steps)
+
     project.set_split(True)
     return True
 

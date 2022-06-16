@@ -1,9 +1,24 @@
 from models import Project, Threshold, get_or_create
 from interface import celery, db
-from image_generation import export_pdf_images, export_binary_images
+from image_generation import export_pdf_images, export_binary_images, split_images
 from find_gaps import find_gaps
 from utils import ignore_handler
 import parse_rules
+
+
+@celery.task(bind=True)
+def split_task(self, project_id, pct):
+    project = Project.get_by_id(project_id)
+
+    pages = project.get_pages(original_only=True)
+
+    pct = float(pct) / 100
+    split_images(project, pct, task=self)
+    project.set_gaps(False)
+    project.set_binarized(False)
+
+    return {'current': 100, 'total': 100, 'status': 'Done',
+            'result': "Split successful"}
 
 
 @celery.task(bind=True)

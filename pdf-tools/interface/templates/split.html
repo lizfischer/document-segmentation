@@ -2,6 +2,7 @@
 
 {% block module %}
 
+{% if not confirm %}
 <div id="split-question">
     <p>Does each page of this PDF show text in a single column? Sometimes books are scanned to show two pages at a time,
         or the source material may have multiple columns per page.</p>
@@ -25,11 +26,16 @@
         <input id="split_pct" name="split_pct" value="50.0" max="100" min="0" maxlength="4" step=".5" type="number" size="3">
         % of the way across each image
         <input type="button" class="btn" id="test-button" value="Test Value">
-        <input type="submit" class="btn btn-primary" value="Commit, do the split">
+        <input id="submit-split" class="btn btn-primary" value="Commit, do the split">
     </form>
 
 </div>
+{% else %} <!-- TODO: FINISH THIS!!! -->
+    <p>Look good?</p>
+    <p>Redo...</p>
+{% endif %}
 
+<div id="progress"></div>
 
 <div id="imgviewer"></div>
 
@@ -57,6 +63,16 @@ $(document).ready(function(){
     /** Update Steps **/
     $(".step-item").removeClass("active");
     $("#workflow-split").addClass("active");
+
+    /** HANDLE FORM **/
+    $('#submit-split').click(function (){
+        const pct = $("#split_pct").val();
+        start_long_task("split", {{project.id}}, pct, finished_split);
+        $("#imgviewer").hide();
+    });
+    function finished_split(){
+        window.location.href = "{{ url_for('split_file', project_id=project.id, confirm=True)}}"
+    }
 
      /** Load Images **/
     var images = {{ images|tojson }};
