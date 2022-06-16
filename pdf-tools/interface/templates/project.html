@@ -15,19 +15,22 @@
           <a href="#close" class="modal-overlay" aria-label="Close"></a>
           <div class="modal-container">
             <div class="modal-header">
-              <a href="#close" class="btn btn-clear float-right" aria-label="Close"></a>
+              <button class="btn btn-clear modal-close float-right" aria-label="Close"></button>
               <div class="modal-title h5">Rename project</div>
             </div>
             <div class="modal-body">
               <div class="content">
-                <label class="form-label" for="new_name">New name</label>
-                <input class="form-input" id="new_name" type="text" placeholder="{{ project.name }}">
-                <p class="form-input-hint">Name must not be blank.</p>
+                  <form id="rename_form" action="/rename" method="post">
+                    <label class="form-label" for="new_name">New name</label>
+                    <input class="form-input" id="new_name" name="new_name" type="text" placeholder="{{ project.name }}">
+                    <input hidden name="project_id" value="{{ project.id }}">
+                    <p class="form-input-hint">Name must not be blank.</p>
+                  </form>
               </div>
             </div>
             <div class="modal-footer">
                 <button id="submit-rename" class="btn btn-primary">Submit</button>
-                <a class="btn btn-link" href="#close" aria-label="Close">Close</a>
+                <button class="btn btn-link modal-close" href="#" aria-label="Close">Close</button>
             </div>
           </div>
         </div>
@@ -37,6 +40,7 @@
 {% block content %}
 
     <ul>
+        <li><a href="{{ url_for('workflow', project_id=project.id) }}">Enter workflow</a></li>
         <li><a href="{{ url_for('split_file', project_id=project.id) }}"> Split pages </a></li>
         <li><a href="#" id="binarize"> Binarize </a></li>
         <li><a href="#" id="margins"> Margins </a></li>
@@ -53,10 +57,9 @@
 
     <script type="text/javascript">
         // Rename Modal
-        $('#rename-btn').click(function (){ open_modal("rename-modal")});
-        $('#rename-modal a[href$=close]').click(function (){ close_modal("rename-modal")});
-        function open_modal(id){document.getElementById(id).classList.add("active");}
-        function close_modal(id){document.getElementById(id).classList.remove("active");}
+        $('#rename-btn').click(function (){
+            $("#rename-modal").addClass("active");
+        });
         // Rename submit
         $("#submit-rename").click(submit_rename);
         $("#new_name").on("keydown", function (e){
@@ -68,32 +71,19 @@
         function submit_rename(){
             const new_name = $("#new_name").val();
             if (!new_name){
-                document.getElementById("new_name").classList.add("is-error");
+                document.getElementById("rename_form").classList.add("has-error");
             }
             else {
-                document.getElementById("new_name").classList.remove("is-error");
-
-                 // send ajax POST request to start background job
-                $.ajax({
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({"new_name": new_name, "project_id": {{project.id}}, "test": "testing"}),
-                    url: "/rename",
-                    success: function () {
-                        location.reload()
-                    },
-                    error: function() {
-                        alert('Unexpected error');
-                    }
-                });
+                document.getElementById("rename_form").classList.remove("has-error");
+                const form = $("#rename_form").submit();
             }
         }
     </script>
 
     <script type="text/javascript">
          $(function() {
-             $('#binarize').click(function (){ start_long_task("binarize", {{project.id}}, callback=finished_binarize) });
-             $('#margins').click(function (){ start_long_task("thresholds", {{project.id}}, data=null, callback=finished_margins) });
+             $('#binarize').click(function (){ start_long_task("binarize", {{project.id}}, null, finished_binarize) });
+             $('#margins').click(function (){ start_long_task("thresholds", {{project.id}}, null, finished_margins) });
 
         });
 

@@ -1,6 +1,7 @@
 .container {
     width: 80% !important;
     margin: auto !important;
+    max-width: 1000px;
 }
 .project-name-wrap {
     display: flex;
@@ -18,3 +19,6 @@ ul.project-list > li.project > a {
     font-size: large;
 }
 
+.block-gap{
+    margin-bottom: 5px;
+}

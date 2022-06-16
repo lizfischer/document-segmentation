@@ -1,16 +1,37 @@
-{% extends "project.html" %}
+{% extends "workflow.html" %}
 
 {% block module %}
 
-<form method="post">
-<!-- TODO make pct adjustable-->
-    <input id="split_pct" name="split_pct" type="text" value="{{ pct }}" maxlength="4" size="1">
-    <input type="button" id="test-button" value="Test split percent">
-    <input type="submit" value="Split PDF">
-</form>
+<div id="split-question">
+    <p>Does each page of this PDF show text in a single column? Sometimes books are scanned to show two pages at a time,
+        or the source material may have multiple columns per page.</p>
+
+    <div id="one-column" class="btn d-block block-gap" >Yes, there is <b>one</b> column of text per page.</div> <!-- Go to binarize -->
+    <div id="do-split" class="btn d-block block-gap">No, there are <b>exactly two</b> columns per PDF page.</div> <!-- Go to split-->
+    <div id="cant-split" class="btn d-block block-gap">No, there are <b>more than two</b> columns per PDF page.</div> <!-- Go to other splitting instructions-->
+</div>
+
+<div id="outside-split" hidden>
+    <p>Please use an external tool to split your PDF so there is only one column of text per page.
+        If you have access to Adobe Acrobat...</p>
+    <p>When you're finished, <a href="{{ url_for('upload') }}">create a new project with the new PDF.</a></p>  <!-- Go to re-upload-->
+</div>
+
+<div id="split-form" hidden>
+    <p>Use the form below to split your PDF. </p>
+
+    <form method="post">
+        Split
+        <input id="split_pct" name="split_pct" value="50.0" max="100" min="0" maxlength="4" step=".5" type="number" size="3">
+        % of the way across each image
+        <input type="button" class="btn" id="test-button" value="Test Value">
+        <input type="submit" class="btn btn-primary" value="Commit, do the split">
+    </form>
+
+</div>
 
 
-<div id="imgviewer" style="width:600px; height:800px"></div>
+<div id="imgviewer"></div>
 
 <style>
     .a9s-annotation .a9s-inner {
@@ -32,35 +53,66 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
+
+    /** Update Steps **/
+    $(".step-item").removeClass("active");
+    $("#workflow-split").addClass("active");
+
+     /** Load Images **/
     var images = {{ images|tojson }};
     initViewer(images);
-    var pct = {{pct|tojson}}
 
-    var annotorious = Annotorious.init({
-        image: "activeImage",// image element or ID
-        disableEditor: true,
-        allowEmpty: true,
-        readOnly: true
-      });
+    /** GO TO BINARIZE **/
+    $("#one-column").click(function (){
+        window.location.href = "{{ url_for('binarize', project_id=project.id) }}";
+    });
 
-    var activeImage = document.querySelector('#activeImage');
-    activeImage.addEventListener('load', function (){
+    /** SHOW EXTERNAL SPLITTING ADVICE **/
+    $("#cant-split").click(function (){
+       $("#outside-split").show();
+        $("#split-question .btn").addClass("disabled")
+        $(this).removeClass("disabled");
+        $(this).addClass("active");
+    });
+
+    /** SHOW SPLITTING FUNCTIONS **/
+    $("#do-split").click(function (){
+        $("#split-form").show();
+        $("#split-question .btn").addClass("disabled")
+        $(this).removeClass("disabled");
+        $(this).addClass("active");
+
+        activeImage.addEventListener('load', function (){
         setAnno(pct)
-    })
-    activeImage.addEventListener('error', function (){
-        alert("Something went wrong, please try again")
-    })
+    });
+        setAnno(pct);
+    });
 
+    $("#cant-split")
 
+    /** Init split form **/
+   /** Split Form Handling **/
     $("#test-button").click(function (){
         pct = $("#split_pct").val();
         setAnno(pct);
     });
 
+
+    var pct = {{pct|tojson}}*100
+    var activeImage = document.querySelector('#activeImage');
+    activeImage.addEventListener('error', function (){
+        alert("Something went wrong, please try again")
+    })
+    var annotorious = Annotorious.init({
+            image: "activeImage",// image element or ID
+            disableEditor: true,
+            allowEmpty: true,
+            readOnly: true
+          });
     var anno_id = "#a88b22d0-6106-4872-9435-c78b5e89fede"
     function setAnno(pct){
         console.log("Adding at " + pct);
-        var x = $("#activeImage").get(0).naturalWidth*pct;
+        var x = $("#activeImage").get(0).naturalWidth*pct/100;
         var height = $("#activeImage").get(0).naturalHeight;
         line = "xywh=pixel:"+x+",0,1,"+height;
         console.log(line)

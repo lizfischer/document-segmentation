@@ -1,4 +1,4 @@
-{% extends "project.html" %}
+{% extends "workflow.html" %}
 
 {% block module %}
 <h2>Threshold Settings</h2>
@@ -34,6 +34,13 @@
 
 <!-- TASK SCRIPT -->
 <script type="text/javascript">
+$(document).ready(function (){
+    /** Update Steps **/
+    $(".step-item").removeClass("active");
+    $("#workflow-margins").addClass("active");
+
+});
+
 function submitForm(){
     const specs = {
             "h_width": $("#h_width").val(), "h_blank": $("#h_blank").val(),
@@ -41,13 +48,19 @@ function submitForm(){
             "preview": $("#preview").val(), "start": $("#start").val()-1, "end": $("#end").val()
         }
 
-    start_long_task("thresholds", {{project.id}}, data=specs, callback=finished_margins)
+    start_long_task("thresholds", {{project.id}}, specs, finished_margins)
 }
-
+ function finished_margins(data){
+    console.log("Finished preparing margins");
+    const start = data["preview"]["start"];
+    const end = data["preview"]["end"];
+    const url = `/{{project.id}}/threshold-preview?t=${data["thresh_id"]}&start=${start}&end=${end}`;
+    window.location.href = url;
+ }
 </script>
 
 <!-- IMAGE VIEWER -->
-<div id="imgviewer" style="width:600px; height:800px"></div>
+<div id="imgviewer"></div>
 <script type="text/javascript">
     $(document).ready(function() {
         var data = {{ data|tojson }}

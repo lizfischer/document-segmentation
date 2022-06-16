@@ -1,5 +1,9 @@
 #imgviewer {
-    border: 1px black solid;
+    margin: auto;
+    padding-top: 15px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    margin-bottom: 2vh;
+    max-height: 98vh;
 }
 
 #imgviewer > #viewer-controls {
@@ -11,19 +15,23 @@
 
 #imgviewer > div:nth-child(2) {
     position: relative;
-    display: inline-block;
-    width: 100%;
-    height: 95%;
+    display: block!important;
 }
 
 
 #imgviewer img {
-    height:95%;
-    width: 100%;
+    max-height: 90vh;
+    max-width: 100%;
     object-fit: contain;
-    border: 1px green solid;
+    margin: auto;
 }
 
+/*
 .a9s-annotationlayer {
-    height:95%;
+    max-height:95%;
+}*/
+
+#currentPg{
+    text-align: center;
+    height:1.8rem;
 }

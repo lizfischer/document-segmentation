@@ -1,17 +1,36 @@
-{% extends "project.html" %}
+{% extends "workflow.html" %}
 
 {% block module %}
+    <p>Next, we have to convert the images to a set of binary matrices.</p>
+    <button class="btn" id="binarize">Start Binarization</button>
 
-    <img id="preview" src="{{ url_for('static', filename=folder+"/1.jpg") }}">
+    <div id="progress"></div>
+
+    <div id="next" style="display:none"><button class="btn">Next Step <i class="fa-solid fa-arrow-right"></i></button></div>
 
 
-<script>
-    var config = {
-          image: 'preview',
-          readOnly: true
-    };
-    var anno = Annotorious.init(config);
-    anno.loadAnnotations("{{ url_for('static', filename="projects/"+project_id+'/annotation.json') }}");
+
+<script type="text/javascript">
+$(document).ready(function (){
+
+    /** Update Steps **/
+    $(".step-item").removeClass("active");
+    $("#workflow-binarize").addClass("active");
+
+
+     function finished_binarize(data){
+         console.log("Binarize: " + data["status"]);
+         $("#next").show();
+     }
+
+    $('#binarize').click(function (){
+        start_long_task("binarize", {{project.id}}, null, finished_binarize);
+    });
+    $("#next").click(function (){
+     window.location.href = "{{ url_for('threshold_preview', project_id=project.id) }}";
+    });
+
+});
+
 </script>
-
 {% endblock %}

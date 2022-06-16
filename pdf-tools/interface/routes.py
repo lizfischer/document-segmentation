@@ -12,6 +12,13 @@ from models import *
 from interface import tasks, celery
 
 
+@app.route('/<project_id>/workflow')
+@app.route('/<project_id>/workflow/<step>')
+def workflow(project_id, step=None):
+    p = Project.get_by_id(project_id)
+    return render_template('workflow.html', project=p, step=step)
+
+
 @app.route('/status/<task_id>', methods=['GET'])
 def task_status(task_id):
     task = celery.AsyncResult(task_id)
@@ -60,6 +67,7 @@ def delegate_tasks():
 
 # TODO: Decompose me please!
 
+
 @app.route('/')
 def main():
     projects = Project.query.all()
@@ -72,21 +80,27 @@ def project(project_id):
     return render_template('project.html', project=p)
 
 
+@app.route('/<project_id>/binarize')
+def binarize(project_id):
+    p = Project.get_by_id(project_id)
+    return render_template('binarize.html', project=p)
+
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
-            flash('No file part')
+            flash('No file part', "error")
             return redirect(request.url)
         file = request.files['file']
         # If the user does not select a file, the browser submits an
         # empty file without a filename.
         if file.filename == '':
-            flash('No selected file')
+            flash('No selected file', "error")
             return redirect(request.url)
         if not allowed_file(file.filename):
-            flash('Invalid file format')
+            flash('Invalid file format', "error")
             return redirect(request.url)
         if file and allowed_file(file.filename):
             new_project = initialize_project(file)
@@ -100,24 +114,24 @@ def delete_project(project_id):
     name = project.name
     try:
         project.delete()
-        flash(f"Successfully deleted {name}")
-    except:
-        flash("Something went wrong")
+        flash(f"Successfully deleted {name}", "success")
+    except Exception as e:
+        flash(f"Something went wrong: {e}", "error")
     return redirect(url_for("main"))
 
 
 @app.route('/rename', methods=['POST'])
 def rename_project():
-    content = request.json
+    content = request.form
     project_id = content["project_id"]
     project = Project.get_by_id(project_id)
     old_name = project.name
     try:
         new_name = content['new_name']
         project.rename(new_name)
-        flash(f"Project name changed from {old_name} to {new_name}")
+        flash(f"Project name changed from {old_name} to {new_name}", "success")
     except:
-        flash("Something went wrong")
+        flash("Something went wrong", "error")
     return redirect(url_for("project", project_id=project_id))
 
 
@@ -131,14 +145,16 @@ def split_file(project_id):
     if len(pages) == 0:  # If pdf hasn't been converted to images yet
         export_pdf_images(project)
     if request.method == 'POST':
-        pct = float(request.form['split_pct'])
+        pct = float(request.form['split_pct'])/100
         split_images(project, pct)
         project.set_gaps(False)
         project.set_binarized(False)
-        flash('Successfully split pages')
+        flash('Successfully split pages', "success")
 
     image_paths = [page.get_ui_img() for page in project.get_pages()]
     return render_template('split.html', project=project, images=image_paths, pct=pct)
+
+
 
 
 @app.route('/<project_id>/threshold-preview', methods=['GET'])
@@ -146,17 +162,23 @@ def threshold_preview(project_id):  # Potentially replacing the find_margins fun
     project = Project.get_by_id(project_id)
 
     thresh_id = request.args.get('t')
-    start = int(request.args.get('start'))
-    end = int(request.args.get('end'))
-
-    thresh = Threshold.get_by_id(thresh_id)
+    if not thresh_id:
+        thresh = Threshold.get_default()
+        start = 0
+        end = 10
+    else:
+        start = int(request.args.get('start'))
+        end = int(request.args.get('end'))
+        thresh = Threshold.get_by_id(thresh_id)
     anno_map = []
 
     pages = project.get_pages()
     pages = pages[start:end]
 
     for page in pages:
-        anno_map.append({"img": page.get_ui_img(), "anno": page.get_whitespace(thresh).annotation})
+        if thresh_id: anno = page.get_whitespace(thresh).annotation
+        else: anno = None
+        anno_map.append({"img": page.get_ui_img(),"anno": anno})
 
     return render_template('margins.html', project=project, data=anno_map, thresh=thresh, start=start, end=end)
 
@@ -214,11 +236,11 @@ def cleanup(project_id):
             except OSError:
                 os.remove(path)
 
-    flash('Project files cleaned up')
+    flash('Project files cleaned up', "success")
     return redirect(url_for("project", project_id=project_id))
 
 
-@app.route('/<project_id>/export') # TODO: DB-ify
+@app.route('/<project_id>/export') # FIXME: DB-ify
 def export(project_id):
     project = Project.objects(id=project_id).first()
 
@@ -226,7 +248,7 @@ def export(project_id):
     return send_file(path, as_attachment=True, attachment_filename=f"{project.name}_entries.json")
 
 
-@app.route('/<project_id>/export_txt') # TODO: DB-ify
+@app.route('/<project_id>/export_txt') # FIXME: DB-ify
 def export_txt(project_id):
     project = Project.get_by_id(project_id)
 

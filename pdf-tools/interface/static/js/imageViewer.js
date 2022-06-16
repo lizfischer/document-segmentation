@@ -7,33 +7,29 @@ function initViewer(images, start_adjustment=0,url_for=true){
     goTo(currentImg);
 
 
-    var nextButton = $('<input />', {
-        type: 'button',
-        value: '-->',
+    var nextButton = $('<i></i>', {
+        class: 'btn fa-solid fa-angle-right',
         id: 'nextBtn',
         on: {
             click: nextImage
         }
     });
-    var prevButton = $('<input />', {
-        type: 'button',
-        value: '<--',
+    var prevButton = $('<i></i>', {
+        class: 'btn fa-solid fa-angle-left',
         id: 'prevBtn',
         on: {
             click: previousImage
         }
     });
-    var firstButton = $('<input />', {
-        type: 'button',
-        value: '|<--',
+    var firstButton = $('<i></i>', {
+        class: 'btn fa-solid fa-angles-left',
         id: 'nextBtn',
         on: {
             click: firstImage
         }
     })
-    var lastButton = $('<input />', {
-        type: 'button',
-        value: '-->|',
+    var lastButton = $('<i></i>', {
+        class: 'btn fa-solid fa-angles-right',
         id: 'nextBtn',
         on: {
             click: lastImage

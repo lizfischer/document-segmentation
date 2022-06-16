@@ -5,11 +5,12 @@
     <!-- Basic -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <script src="https://kit.fontawesome.com/898fbad675.js" crossorigin="anonymous"></script>
 
     <!-- Frontend framework -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/spectre.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/spectre-exp.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/spectre-icons.min.css') }}">
 
     <!-- Annotorious-->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/annotorious.min.css') }}">
@@ -22,6 +23,7 @@
     <!-- Async tasks -->
     <script type="text/javascript" src="{{ url_for('static', filename='js/taskRunner.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/nanobar.min.js') }}"></script>
+
 
 </head>
 
@@ -36,9 +38,18 @@
         {% block header %}{% endblock %}
     </header>
 
-  {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
-  {% endfor %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class=flashes>
+        {% for category, message in messages %}
+            <div class="toast toast-{{ category }}">
+                <button class="btn btn-clear float-right"></button>
+                {{ message }}
+            </div>
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
 
   {% block content %}{% endblock %}
 

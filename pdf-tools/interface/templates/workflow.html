@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+
+{% block header_left %}
+    <a class="btn" href="{{ url_for('project', project_id=project.id) }}"><< Project Dashboard</a>
+{% endblock %}
+{% block header_center %}
+        <div class="project-name-wrap">
+            <h1>{{ project.name }}</h1>
+        </div>
+{% endblock %}
+
+
+{% block content %}
+    <ul class="step">
+      <li class="step-item active">
+        <a href="#" class="tooltip" data-tooltip="Convert PDF to images">Extract images</a>
+      </li>
+      <li class="step-item" id="workflow-split">
+        <a href="#" class="tooltip" data-tooltip="Separate multi-column pages">Split pages</a>
+      </li>
+      <li class="step-item" id="workflow-binarize">
+        <a href="#" class="tooltip" data-tooltip="Convert images to binary matrices">Binarize images</a>
+      </li>
+      <li class="step-item"  id="workflow-margins">
+        <a href="#" class="tooltip" data-tooltip="Prepare to write separation rules">Experiment with thresholds</a>
+      </li>
+      <li class="step-item">
+        <a href="#" class="tooltip" data-tooltip="Split the PDF into text entries based on your rules">Separate Entries</a>
+      </li>
+      <li class="step-item">
+        <a href="#" class="tooltip" data-tooltip="Save the data in a variety of formats">Export data</a>
+      </li>
+    </ul>
+
+    {% block module %}
+
+    {% endblock %}
+
+
+{% endblock %}

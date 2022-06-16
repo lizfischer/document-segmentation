@@ -1,5 +1,8 @@
 import os
 import json
+
+import shutil
+
 from interface import app
 from interface import db
 from sqlalchemy.orm import validates
@@ -284,8 +287,8 @@ class Project(db.Model):
         return True
 
     def get_whitespace(self, thresh):
-        return Whitespace.query.join(Page, Whitespace.page_id == Page.id)\
-             .filter(Page.project_id == self.id, Whitespace.threshold_id == thresh.id).all()
+        return Whitespace.query.join(Page, Whitespace.page_id == Page.id) \
+            .filter(Page.project_id == self.id, Whitespace.threshold_id == thresh.id).all()
 
     def remove_split_pages(self):
         pages = Page.query.with_parent(self).filter(Page.type == "split").all()
@@ -319,6 +322,8 @@ class Project(db.Model):
 
     def delete(self):
         project = Project.query.filter_by(id=self.id).first()
+        project_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(self.id))
+        shutil.rmtree(project_folder)
         db.session.delete(project)
         db.session.commit()
 
