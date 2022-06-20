@@ -82,12 +82,6 @@ def project(project_id):
     return render_template('project.html', project=p)
 
 
-@app.route('/<project_id>/binarize')
-def binarize(project_id):
-    p = Project.get_by_id(project_id)
-    return render_template('binarize.html', project=p)
-
-
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
@@ -156,6 +150,11 @@ def split_file(project_id):
     image_paths = [page.get_ui_img() for page in project.get_pages()]
     return render_template('split.html', project=project, images=image_paths, pct=pct, confirm=confirm)
 
+
+@app.route('/<project_id>/binarize')
+def binarize(project_id):
+    p = Project.get_by_id(project_id)
+    return render_template('binarize.html', project=p)
 
 
 
