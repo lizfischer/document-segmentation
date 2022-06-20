@@ -70,6 +70,8 @@ $(document).ready(function(){
         const pct = $("#split_pct").val();
         start_long_task("split", {{project.id}}, pct, finished_split);
         $("#imgviewer").hide();
+        $("#submit-split").attr('disabled', true);
+
     });
     function finished_split(){
         window.location.href = "{{ url_for('split_file', project_id=project.id, confirm=True)}}"

@@ -25,6 +25,7 @@ $(document).ready(function (){
 
     $('#binarize').click(function (){
         start_long_task("binarize", {{project.id}}, null, finished_binarize);
+        $("#binarize").attr('disabled', true);
     });
     $("#next").click(function (){
      window.location.href = "{{ url_for('threshold_preview', project_id=project.id) }}";

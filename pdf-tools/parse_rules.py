@@ -35,26 +35,26 @@ def ignore_helper(project, direction, n_gaps, min_size, blank_thresh, task=None,
     whitespace_data = project.get_whitespace(thresholds)
     i = 1
     for ws in whitespace_data:
-        pg = project.get_page(i)
+        pg = project.get_page_by_id(ws.page_id)
 
         if direction == "above":  # ignore text above
             # The 0-start gap is ALWAYS ignored because it is a margin with no text detected at this threshold
             gap = ws.get_nth_horizontal(n_gaps)
-            start = int(gap.start + gap.width/2)
+            start = int(gap.start + gap.width/2) if gap else 0 # start at the top of the page if there are no gaps to ignore
             pg.set_ignore("start", start)
         elif direction == "below":  # ignore text below
             # The last gap is ALWAYS ignored because it is a margin with no text detected at this threshold
             gap = ws.get_nth_horizontal(-n_gaps - 1)
-            end = int(gap.start + gap.width/2)
+            end = int(gap.start + gap.width/2) if gap else 0
             pg.set_ignore("end", end)
         elif direction == "left":  # ignore text to the left
             gap = ws.get_nth_vertical(n_gaps - 1)
-            left = gap.end - 2
+            left = gap.end - 2  if gap else 0
             # left_edge = page["vertical_gaps"][n_gaps - 1].end - 2  # + page["vertical_gaps"][n_gaps-1]["width"]/2
             pg.set_ignore("left", left)
         elif direction == "right":  # ignore text to the left
             gap = ws.get_nth_vertical(n_gaps - 1)
-            right = gap.start + 2
+            right = gap.start + 2  if gap else 0
             pg.set_ignore("right", right)
 
         if task:
@@ -79,9 +79,9 @@ def ignore(project, rule1=None, rule2=None, task=None):
 
     if rule2:
         if rule2["direction"] == "above" and not starts:
-            starts = ignore_helper(project, 1, rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
+            starts = ignore_helper(project, "above", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
         elif rule2["direction"] == "below" and not ends:
-            ends = ignore_helper(project, -1, rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
+            ends = ignore_helper(project, "below", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
         elif rule2["direction"] == "left" and not lefts:
             lefts = ignore_helper(project, "left", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
         elif rule2["direction"] == "right" and not rights:

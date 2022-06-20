@@ -1,4 +1,4 @@
-{% extends "project.html" %}
+{% extends "workflow.html" %}
 
 
 {% block module %}
@@ -28,9 +28,9 @@
                     <option value="left">left of the first</option>
                     <option value="left">right of the last</option>
                 </select>
-            <input name="ignore-num-1" type="text" value="1" maxlength="2" size="1"> gap(s)
-            with a minimum size of <input name="ignore-width-1" type="text" maxlength="3" size="1"> px
-            and blankness threshold of <input name="ignore-blank-1" type="text" maxlength="4" size="1">
+            <input id="ignore-num-1" name="ignore-num-1" type="text" value="1" maxlength="2" size="1"> gap(s)
+            with a minimum size of <input id="ignore-width-1" name="ignore-width-1" type="text" maxlength="3" size="1"> px
+            and blankness threshold of <input id="ignore-blank-1" name="ignore-blank-1" type="text" maxlength="4" size="1">
         </span>
 
         <input type="button" value="+" id="ignore-more">
@@ -53,13 +53,19 @@
         <span id="regex-text" style="display: none;" >/<input id="regex-text-input" name="regex-text" type="text" maxlength="100" size="40"></span>
 
     </fieldset>
-    <button onclick="submitForm()" type="button">Submit</button>
+    <button onclick="submitForm()" class="btn btn-primary " id="submit-button" type="button">Submit</button>
 </form>
 
 <div id="progress"></div>
+<button id="next-button" class="btn" style="display: none">Next Step <i class="fa-solid fa-arrow-right"></i></button>
 
 <!-- TASK SCRIPT -->
 <script type="text/javascript">
+
+    /** Update Steps **/
+    $(".step-item").removeClass("active");
+    $("#separate").addClass("active");
+
 function submitForm(){
     const formdata = {
             "ignore-position-0": $("#ignore-position-0").val() || null,
@@ -76,11 +82,13 @@ function submitForm(){
             "regex-text": $("#regex-text-input").val()
         }
 
+    $("#submit-button").attr('disabled', true);
     start_long_task("simplesep", {{project.id}}, data=formdata, callback=finished_separate)
 }
 
 function finished_separate(){
     console.log("Done with separate")
+    $("#next-button").show();
 }
 
 </script>

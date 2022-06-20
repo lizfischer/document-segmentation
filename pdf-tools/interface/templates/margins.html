@@ -27,9 +27,12 @@
     <p id="warning-all" hidden class="warning">Warning! Previewing on all pages might take a while if your file is large.</p>
     <p id="warning-long" hidden class="warning">Warning! Previewing this many pages might take a while.</p>
     <br>
-    <button onclick="submitForm()" type="button">Submit</button>
+    <button onclick="submitForm()" type="button" class="btn btn-primary">Submit</button>
 </form>
+
 <br>
+<a href="{{ url_for('simple_separate_ui', project_id=project.id) }}"><button class="btn">Finished here, ready to write rules <i class="fa-solid fa-arrow-right"></i></button></a>
+
 <div id="progress"></div>
 
 <!-- TASK SCRIPT -->

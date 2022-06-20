@@ -136,10 +136,14 @@ class Whitespace(db.Model):
         return [g for g in self.gaps if g.direction == "vertical"]
 
     def get_nth_horizontal(self, n):
-        return self.get_horizontal()[n]
+        gaps = self.get_horizontal()
+        try: return gaps[n]
+        except IndexError: return None
 
     def get_nth_vertical(self, n):
-        return self.get_vertical()[n]
+        gaps = self.get_vertical()
+        try: return gaps[n]
+        except IndexError: return None
 
 
 class Page(db.Model):
@@ -269,7 +273,11 @@ class Project(db.Model):
             pages = Page.query.with_parent(self).filter(Page.type == "original").all()
         return pages
 
-    def get_page(self, n, original_only=False):
+    def get_page_by_id(self, id):
+        page = Page.query.with_parent(self).filter(Page.type == "split", Page.id == id).first()
+        return page
+
+    def get_page_by_sequence(self, n, original_only=False):
         if self.is_split and not original_only:
             page = Page.query.with_parent(self).filter(Page.type == "split", Page.sequence==n).first()
         else:
