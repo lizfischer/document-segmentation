@@ -61,6 +61,9 @@ def ignore_helper(project, direction, n_gaps, min_size, blank_thresh, task=None,
             update_status(task, 'Ignoring out of bounds data...', i, len(whitespace_data), steps)
 
         i += 1
+    return True
+
+
 # rule1 and rule 2 should each take the form {direction: 'above'|'below', n_gaps: #, min_size: #, blank_thresh: #}
 # Returns none for starts, ends, lefts, and rights if no rules specified
 def ignore(project, rule1=None, rule2=None, task=None):
@@ -79,13 +82,13 @@ def ignore(project, rule1=None, rule2=None, task=None):
 
     if rule2:
         if rule2["direction"] == "above" and not starts:
-            starts = ignore_helper(project, "above", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
+            ignore_helper(project, "above", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
         elif rule2["direction"] == "below" and not ends:
-            ends = ignore_helper(project, "below", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
+            ignore_helper(project, "below", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
         elif rule2["direction"] == "left" and not lefts:
-            lefts = ignore_helper(project, "left", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
+            ignore_helper(project, "left", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
         elif rule2["direction"] == "right" and not rights:
-            rights = ignore_helper(project, "right", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
+            ignore_helper(project, "right", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
         else:
             print("Rule 2 ignored because it would replace rule 1")
 
@@ -336,7 +339,7 @@ def indent_separate(project_id, indent_type, margin_thresh, indent_width, ignore
         left = lefts[n] if lefts else 0
         right = rights[n] if rights else p["width"]
 
-        ocr = ocr_page(project_id, n, start, end, left, right)
+        ocr = ocr_page(project_id, n, start, end, left, right) # FIXME
 
         # Find left margin
         all_vertical_gaps = next((pg for pg in gaps_data if pg["num"] == n), None)["vertical_gaps"]  # find this page

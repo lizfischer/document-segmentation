@@ -32,18 +32,3 @@ services:
     ports:
       - "6379:6379"
     container_name: redis
-
-
-  flower-dashboard:
-    build: .
-    container_name: flower-dashboard
-    command: celery --app interface.celery flower --port=5555 --broker=redis://redis:6379/0
-    ports:
-      - 5556:5555
-    volumes:
-        - ./:/app
-    environment:
-      - FLASK_DEBUG=1
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    depends_on: ["redis", "celery"]

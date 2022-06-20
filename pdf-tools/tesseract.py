@@ -1,6 +1,5 @@
 import pytesseract
 from PIL import Image
-import time
 import json
 from tqdm import tqdm
 import pandas as pd

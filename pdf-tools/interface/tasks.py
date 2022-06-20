@@ -10,8 +10,6 @@ import parse_rules
 def split_task(self, project_id, pct):
     project = Project.get_by_id(project_id)
 
-    pages = project.get_pages(original_only=True)
-
     pct = float(pct) / 100
     split_images(project, pct, task=self)
     project.set_gaps(False)

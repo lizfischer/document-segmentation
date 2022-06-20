@@ -87,8 +87,8 @@ class Threshold(db.Model):
         return Threshold.query.filter_by(h_width=h_width, h_blank=h_blank,v_width=v_width, v_blank=v_blank).first()
 
     @staticmethod
-    def get_by_id(id):
-        return Threshold.query.filter_by(id=id).first()
+    def get_by_id(threshold_id):
+        return Threshold.query.filter_by(id=threshold_id).first()
 
 
 
@@ -267,14 +267,14 @@ class Project(db.Model):
         return os.path.join(app.config['UPLOAD_FOLDER'], str(self.id), "binary")
 
     def get_pages(self, original_only=False):
-        if self.is_split and not original_only: # FIXME: Why is self.is_split false when the thing has been split?
+        if self.is_split and not original_only:
             pages = Page.query.with_parent(self).filter(Page.type == "split").all()
         else:
             pages = Page.query.with_parent(self).filter(Page.type == "original").all()
         return pages
 
-    def get_page_by_id(self, id):
-        page = Page.query.with_parent(self).filter(Page.type == "split", Page.id == id).first()
+    def get_page_by_id(self, page_id):
+        page = Page.query.with_parent(self).filter(Page.type == "split", Page.id == page_id).first()
         return page
 
     def get_page_by_sequence(self, n, original_only=False):
@@ -341,7 +341,6 @@ class Project(db.Model):
 
     def clear_split(self):
         pages = self.get_pages()
-        project_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(self.id))
         for p in pages:
             os.remove(p.get_img())
             db.session.delete(p)
