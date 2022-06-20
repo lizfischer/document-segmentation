@@ -24,6 +24,7 @@
     max-width: 100%;
     object-fit: contain;
     margin: auto;
+    display: block;
 }
 
 /*
@@ -31,7 +32,7 @@
     max-height:95%;
 }*/
 
-#currentPg{
+#currentPg {
     text-align: center;
     height:1.8rem;
 }
