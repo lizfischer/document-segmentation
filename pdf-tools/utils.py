@@ -9,7 +9,7 @@ from models import Project
 
 def update_status(task, message, current, total, steps=None):
     if steps:
-        message += f' [Step {steps[0]} of {steps[1]}]'
+        message = f"{steps['prefix_message']}: {message} [step {steps['current']} of {steps['total']}]"
     task.update_state(state='PROGRESS',
                   meta={'current': current, 'total': total ,
                         'status': message})
@@ -35,7 +35,7 @@ def initialize_project(file):
     return db_project
 
 
-def ignore_handler(project, form_data, task=None):
+def ignore_handler(project, form_data, task=None, steps=None):
     # Handle Ignore Rules
     ignore_rule_1 = {"direction": form_data['ignore-position-0'],
                      "n_gaps": form_data['ignore-num-0'],
@@ -46,7 +46,15 @@ def ignore_handler(project, form_data, task=None):
                      "min_size": form_data['ignore-width-1'],
                      "blank_thresh": form_data['ignore-blank-1']}
 
-    if not ignore_rule_1["min_size"]: ignore_rule_1 = None;
-    if not ignore_rule_2["min_size"]: ignore_rule_2 = None;
-    parse_rules.ignore(project, ignore_rule_1, ignore_rule_2, task=task)
+    n_steps = 6
+    if not ignore_rule_1["min_size"]:
+        ignore_rule_1 = None
+        n_steps -= 2
+    if not ignore_rule_2["min_size"]:
+        ignore_rule_2 = None
+        n_steps -= 2
+
+    steps = {'current': 0, 'total': n_steps, 'prefix_message': 'Finding areas to ignore'}
+    parse_rules.ignore(project, ignore_rule_1, ignore_rule_2, task=task, steps=steps)
+    return steps
 

@@ -26,15 +26,15 @@ def ignore_helper(project, direction, n_gaps, min_size, blank_thresh, task=None,
     else:
         thresholds = None
 
+    x, steps = find_gaps(project, thresh=thresholds, verbose=False, task=task, steps=steps)
+    whitespace_data = project.get_whitespace(thresholds)
 
+    if steps:
+        steps["current"] += 1
     if task:
         update_status(task, 'Ignoring out of bounds data...', 0, 100, steps)
 
-
-    find_gaps(project, thresh=thresholds, verbose=False, task=task)
-    whitespace_data = project.get_whitespace(thresholds)
-    i = 1
-    for ws in whitespace_data:
+    for i, ws in enumerate(whitespace_data):
         pg = project.get_page_by_id(ws.page_id)
 
         if direction == "above":  # ignore text above
@@ -58,40 +58,40 @@ def ignore_helper(project, direction, n_gaps, min_size, blank_thresh, task=None,
             pg.set_ignore("right", right)
 
         if task:
-            update_status(task, 'Ignoring out of bounds data...', i, len(whitespace_data), steps)
+            update_status(task, 'Ignoring out of bounds data...', i+1, len(whitespace_data), steps)
 
-        i += 1
-    return True
+    return True, steps
 
 
 # rule1 and rule 2 should each take the form {direction: 'above'|'below', n_gaps: #, min_size: #, blank_thresh: #}
 # Returns none for starts, ends, lefts, and rights if no rules specified
-def ignore(project, rule1=None, rule2=None, task=None):
+def ignore(project, rule1=None, rule2=None, task=None, steps=None):
     print("\n***Finding which sections to ignore...***")
     starts, ends, lefts, rights = None, None, None, None
 
     if rule1:
         if rule1["direction"] == "above":
-            starts = ignore_helper(project, "above", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"], task=task)
+            starts, steps = ignore_helper(project, "above", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"], task=task, steps=steps)
         elif rule1["direction"] == "below":
-            ends = ignore_helper(project, "below", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"], task=task)
+            ends, steps = ignore_helper(project, "below", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"], task=task, steps=steps)
         elif rule1["direction"] == "left":
-            lefts = ignore_helper(project, "left", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"], task=task)
+            lefts, steps = ignore_helper(project, "left", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"], task=task, steps=steps)
         elif rule1["direction"] == "right":
-            rights = ignore_helper(project, "right", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"], task=task)
+            rights, steps = ignore_helper(project, "right", rule1["n_gaps"], rule1["min_size"], rule1["blank_thresh"], task=task, steps=steps)
 
     if rule2:
         if rule2["direction"] == "above" and not starts:
-            ignore_helper(project, "above", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
+            starts, steps = ignore_helper(project, "above", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task, steps=steps)
         elif rule2["direction"] == "below" and not ends:
-            ignore_helper(project, "below", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
+            ends, steps = ignore_helper(project, "below", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task, steps=steps)
         elif rule2["direction"] == "left" and not lefts:
-            ignore_helper(project, "left", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
+            lefts, steps = ignore_helper(project, "left", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task, steps=steps)
         elif rule2["direction"] == "right" and not rights:
-            ignore_helper(project, "right", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task)
+            rights, steps = ignore_helper(project, "right", rule2["n_gaps"], rule2["min_size"], rule2["blank_thresh"], task=task, steps=steps)
         else:
             print("Rule 2 ignored because it would replace rule 1")
 
+    return steps
 
 def ocr_page(page, start=None, end=None, left=None, right=None):
     custom_config = r'-c preserve_interword_spaces=1 --oem 1 --psm 1 -l eng+ita'  # TODO: Add language customization?
@@ -165,7 +165,9 @@ def simple_separate(project, gap_size, blank_thresh, split, regex=None, task=Non
 
     # Do gap recognition at the set threshold
     thresholds = get_or_create(db.session, Threshold, h_width=gap_size, h_blank=blank_thresh)
-    find_gaps(project, thresh=thresholds, verbose=False, task=task)
+    if steps:
+        steps['prefix_message'] = 'Separating entries'
+    find_gaps(project, thresh=thresholds, verbose=False, task=task, steps=steps)
 
     print("\n**Separating entries gaps...**")
 
@@ -207,8 +209,10 @@ def simple_separate(project, gap_size, blank_thresh, split, regex=None, task=Non
 
     pages = project.get_pages()
 
+    if steps:
+        steps['current'] += 1
     if task:
-        update_status(task, 'Separating... [this is the last step!]', 0, len(pages), steps)
+        update_status(task, 'Separating...', 0, len(pages), steps)
 
     # For each page in numerical order NB: this relies on find_gaps returning a SORTED list
     for i, page in enumerate(pages):  # NOTE: This is the place to limit pages if desired for testing
@@ -284,7 +288,7 @@ def simple_separate(project, gap_size, blank_thresh, split, regex=None, task=Non
         # active_entry = get_formatted_text(active_selection)
 
         if task:
-            update_status(task, 'Separating...[this is the last step!]', i, len(pages), steps)
+            update_status(task, 'Separating...', i, len(pages), steps)
 
     save_entry()
     return write_entries(project)

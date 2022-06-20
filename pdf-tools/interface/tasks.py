@@ -68,12 +68,13 @@ def margins_task(self, project_id, specs):
 def simple_sep_task(self, project_id, data):
     project = Project.get_by_id(project_id)
 
-    ignore_handler(project, data, task=self)
+
+    steps = ignore_handler(project, data, task=self)
     parse_rules.simple_separate(project,
                                 gap_size=float(data["gap-width"]),
                                 blank_thresh=float(data["gap-blank"]),
                                 split=data["split-type"],
-                                regex=data["regex-text"], task=self)
+                                regex=data["regex-text"], task=self, steps=steps)
     return {'current': 100, 'total': 100, 'status': 'Done',
             'result': "Simple separation successful"}
 

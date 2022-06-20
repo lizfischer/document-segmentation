@@ -127,6 +127,8 @@ def process_page(im_path, thresholds, viz=False):
 def find_gaps(project, thresh=None,
               viz=False, verbose=True, preview=None,
               task=None, steps=None):
+    if steps:
+        steps["current"] += 1
 
     if verbose:
         print("\n*** Detecting margins & whitespace... ***")
@@ -138,7 +140,9 @@ def find_gaps(project, thresh=None,
         pages = pages[preview[0]:preview[1]]
 
     if project.has_whitespace(thresh, pages):
-        return True
+        if task:
+            update_status(task, 'Detecting whitespace...', 1, 1, steps)
+        return True, steps
 
     for i, page in enumerate(pages): # for every page
         image_path = page.get_binary()
@@ -164,4 +168,4 @@ def find_gaps(project, thresh=None,
         if task:
             update_status(task, 'Detecting whitespace...', i, len(pages), steps)
 
-    return True
+    return True, steps
