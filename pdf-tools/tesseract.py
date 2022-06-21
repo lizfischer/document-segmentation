@@ -52,8 +52,32 @@ def get_formatted_text(df, sort=True):
                 prev_left += len(ln['text']) + added + 1
             text += '\n'
         return text.strip()
-    except OverflowError:  # TODO Real solution?
+    except OverflowError:  # FIXME: Real solution?
         return ""
+
+
+def get_simple_format_text(df, sort=False):
+    if sort:
+        block_order = df.groupby('block_num').first().sort_values('left').sort_values('top').index.tolist()
+    else:
+        block_order = df.groupby('block_num').first().index.tolist()
+    text = ''
+    for block_num in block_order:
+        current_block = df[df['block_num'] == block_num]
+        prev_par, prev_line, prev_left = 0, 0, 0
+        for ix, ln in current_block.iterrows():
+            # add new line when necessary
+            if prev_par != ln['par_num']:
+                text += '\n'
+                prev_par = ln['par_num']
+                prev_line = ln['line_num']
+                prev_left = 0
+            elif prev_line != ln['line_num']:
+                text += '\n'
+                prev_line = ln['line_num']
+                prev_left = 0
+        text += '\n'
+    return text.strip()
 
 
 def finish_entry():

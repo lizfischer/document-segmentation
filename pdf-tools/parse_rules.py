@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from find_gaps import find_gaps
 from models import *
-from tesseract import get_formatted_text
+from tesseract import get_formatted_text, get_simple_format_text
 from utils import update_status
 
 pd.set_option("display.max_rows", 10, "display.max_columns", None)
@@ -154,7 +154,7 @@ def simple_separate_val(split, regex=None):
 # option to always start a new entry at the top ("strong split"), or never do so ("weak split")
 # So the options are: Always, never, or first-line regex
 # FIXME: Can I decompose this method more?
-def simple_separate(project, gap_size, blank_thresh, split, regex=None, task=None, steps=None):
+def simple_separate(project, gap_size, blank_thresh, split, regex=None, task=None, steps=None, formatted=False):
     simple_separate_val(split=split, regex=regex)
 
     print("\n***Removing old entry data...***")
@@ -173,13 +173,11 @@ def simple_separate(project, gap_size, blank_thresh, split, regex=None, task=Non
 
     # Establish list of entries & var to track the active entry
     separated_entries = []
-    active_entry = {"text": "", "pages": []}
-
+    active_entry = {"text": "", "pages": [], "sequence": 0}
     def save_entry():
-        nonlocal active_entry
-        nonlocal project
+        nonlocal active_entry, project
         if active_entry["text"] != "":
-            e = Entry(text=active_entry["text"])
+            e = Entry(text=active_entry["text"], sequence=active_entry["sequence"])
             project.add_entry(e)
             for p in active_entry["pages"]:
                 x,y,w,h = p["xywh"].split(",")
@@ -197,14 +195,22 @@ def simple_separate(project, gap_size, blank_thresh, split, regex=None, task=Non
     def new_entry(df_slice, pg):
         nonlocal active_entry
         save_entry()  # save the previous entry first!
-        active_entry = {"text": get_formatted_text(df_slice),
-                        "pages": [{"page": pg, "xywh": get_bounds(df_slice)}]
+        if formatted:
+            text = get_formatted_text(df_slice)
+        else:
+            text = get_simple_format_text(df_slice)
+        active_entry = {"text": text,
+                        "pages": [{"page": pg, "xywh": get_bounds(df_slice)}],
+                        "sequence": active_entry["sequence"] + 1
                         }
 
     def add_to_entry(df_slice, pg):
         nonlocal active_entry
-        t = get_formatted_text(df_slice)
-        active_entry["text"] += f"\n\n{t}"
+        if formatted:
+            text = get_formatted_text(df_slice)
+        else:
+            text = get_simple_format_text(df_slice)
+        active_entry["text"] += f"\n\n{text}"
         active_entry["pages"].append({"page": pg, "xywh": get_bounds(df_slice)})
 
     pages = project.get_pages()
@@ -252,7 +258,10 @@ def simple_separate(project, gap_size, blank_thresh, split, regex=None, task=Non
         # If regex, test regex and then either append or start new
         elif split == "regex" and regex:
             # Get text
-            text = get_formatted_text(active_selection)
+            if formatted:
+                text = get_formatted_text(active_selection)
+            else:
+                text = get_simple_format_text(active_selection)
             needs_split = re.search(regex, text)
 
             if needs_split:  # Start a new entry
