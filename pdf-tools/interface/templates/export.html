@@ -1,0 +1,56 @@
+{% extends "workflow.html" %}
+
+{% block module %}
+    <p>Export entries as .txt files. I recommend doing this even if you're going to edit the entries, just as a backup.</p>
+    <button class="btn btn-primary" id="export-btn">Download .zip</button>
+
+    <a href="{{ url_for('edit_segments', project_id=project.id) }}">
+        <button id="next" class="btn">Next Step <i class="fa-solid fa-arrow-right"></i></button>
+    </a>
+
+    <div id="loading" style="display: none;" class="loading loading-lg"></div>
+
+
+<script type="text/javascript">
+$(document).ready(function (){
+
+    /** Update Steps **/
+    $(".step-item").removeClass("active");
+    $("#export-step").addClass("active");
+
+
+    $("#export-btn").click(function (){
+
+        $('#next').addClass("disabled");
+        $('#export-btn').addClass("disabled");
+        $("#loading").show();
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "{{ url_for('export_txt', project_id=project.id) }}", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.responseType = 'blob';
+        xhr.onload = function (e) {
+            var blob = e.currentTarget.response;
+            var contentDispo = e.currentTarget.getResponseHeader('Content-Disposition');
+            // https://stackoverflow.com/a/23054920/
+            var fileName = contentDispo.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)[1];
+            saveBlob(blob, fileName);
+
+            $('#next').removeClass("disabled");
+            $('#export-btn').removeClass("disabled");
+            $("#loading").hide();
+        };
+
+        xhr.send();
+    });
+
+    function saveBlob(blob, fileName) {
+        var a = document.createElement('a');
+        a.href = window.URL.createObjectURL(blob);
+        a.download = fileName;
+        a.dispatchEvent(new MouseEvent('click'));
+    }
+});
+
+</script>
+{% endblock %}

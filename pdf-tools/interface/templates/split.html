@@ -64,6 +64,7 @@ $(document).ready(function(){
     /** Update Steps **/
     $(".step-item").removeClass("active");
     $("#workflow-split").addClass("active");
+    $("#workflow-split").nextAll().find('a').css({"pointer-events": "none"});
 
     /** HANDLE FORM **/
     $('#submit-split').click(function (){

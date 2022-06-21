@@ -92,7 +92,7 @@ def export_pdf_images(project, task=None, steps=None):
             project.add_page(page)
 
             if task:
-                update_status(task, 'Exporting PDF to images...', i, maxPages, steps)
+                update_status(task, 'Converting PDF to images...', i, maxPages, steps)
 
             i += 1
     return output_dir

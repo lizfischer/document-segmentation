@@ -1,0 +1,38 @@
+{% extends "workflow.html" %}
+
+{% block module %}
+    <p>First, your PDF needs to be converted to images.</p>
+    <button class="btn" id="extract">Start conversion</button>
+
+    <div id="progress"></div>
+
+    <div id="next" style="display:none"><button class="btn">Next Step <i class="fa-solid fa-arrow-right"></i></button></div>
+
+
+
+<script type="text/javascript">
+$(document).ready(function (){
+
+    /** Update Steps **/
+    $(".step-item").removeClass("active");
+    $("#extract").addClass("active");
+    $("#extract").nextAll().find('a').css({"pointer-events": "none"});
+
+
+     function finished_extract(data){
+         $("#next").show();
+     }
+
+    $('#extract').click(function (){
+        start_long_task("binarize", {{project.id}}, null, finished_extract);
+        $("#extract").attr('disabled', true);
+    });
+
+    $("#next").click(function (){
+        window.location.href = "{{ url_for('split_file', project_id=project.id) }}";
+    });
+
+});
+
+</script>
+{% endblock %}
