@@ -15,8 +15,17 @@ from interface import tasks, celery
 @app.route('/<project_id>/workflow')
 @app.route('/<project_id>/workflow/<step>')
 def workflow(project_id, step=None):
-    p = Project.get_by_id(project_id)
-    return render_template('workflow.html', project=p, step=step)
+    project = Project.get_by_id(project_id)
+    if len(project.pages) == 0:
+        return redirect(url_for('pdf_to_images', project_id=project_id))
+    elif not project.is_split and not project.is_binarized:
+        return redirect(url_for('split_file', project_id=project_id))
+    elif not project.is_binarized:
+        return redirect(url_for('binarize', project_id=project_id))
+    elif len(project.entries) == 0:
+        return redirect(url_for('threshold_preview', project_id=project_id))
+    else:
+        return redirect(url_for('export', project_id=project_id))
 
 
 @app.route('/status/<task_id>', methods=['GET'])
@@ -57,6 +66,8 @@ def task_status(task_id):
 def delegate_tasks():
     content = request.json
     project_id = content["project_id"]
+    if content["type"] == "extract":
+        task = tasks.extract_task.delay(project_id)
     if content["type"] == "split":
         task = tasks.split_task.delay(project_id, content["data"])
     if content["type"] == "binarize":
@@ -129,6 +140,13 @@ def rename_project():
     except:
         flash("Something went wrong", "error")
     return redirect(url_for("project", project_id=project_id))
+
+
+
+@app.route('/<project_id>/extract')
+def pdf_to_images(project_id):
+    p = Project.get_by_id(project_id)
+    return render_template('extract.html', project=p)
 
 
 @app.route('/<project_id>/split', methods=['GET'])
