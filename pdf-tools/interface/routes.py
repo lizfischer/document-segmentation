@@ -242,6 +242,71 @@ def indent_separate_ui(project_id):
     return render_template('indent_sep.html', project_id=project_id, status=status)
 
 
+@app.route('/<project_id>/edit', methods=['GET', 'POST'])
+def edit_segments(project_id):
+    project = Project.get_by_id(project_id)
+    image_paths = [page.get_ui_img() for page in project.get_pages()]
+
+    # Get current & surrounding entries
+    if request.args.get('entry'):
+        entry_id = request.args.get('entry')
+        current_entry = Entry.get_by_id(entry_id)
+    elif request.method == 'POST':
+        entry_id = request.json["entry"]
+        current_entry = Entry.get_by_id(entry_id)
+    else:
+        current_entry = Entry.get_first(project_id)
+        current_entry_id = current_entry.id
+    next_entry = current_entry.get_next()
+    previous_entry = current_entry.get_previous()
+
+    # Get page to start viewer on
+    page_num = current_entry.boxes[0].page
+
+    if request.method == 'POST':
+        # If we're splitting docs...
+        if request.json["action"] == "split":
+            split_offset = int(request.json['offset'])
+            keep = request.json["text"][:split_offset]
+            new_text = request.json["text"][split_offset:]
+
+            new_sequence = current_entry.sequence + (next_entry.sequence - current_entry.sequence)/2
+            new_entry = Entry(text=new_text, sequence=new_sequence)
+            project.add_entry(new_entry)
+
+            split_page = int(request.json['split_page'])
+            for b in current_entry.boxes:
+                if b.page >= split_page:
+                    new_entry.add_box(BoundingBox(entry_id=new_entry.id, page=b.page, x=b.x, y=b.y, w=b.w, h=b.h))
+            current_entry.update_text(keep)
+
+        # If we're joining docs....
+        elif request.json["action"] == "join":
+            previous_entry.update_text("\n\n".join((previous_entry.text, request.json["text"])))
+            for b in current_entry.boxes:
+                previous_entry.add_box(BoundingBox(entry_id=previous_entry.id, page=b.page, x=b.x, y=b.y, w=b.w, h=b.h))
+            current_entry.delete()
+            current_entry = previous_entry
+            next_entry = current_entry.get_next()
+            previous_entry = current_entry.get_previous()
+
+        # If we're saving the current doc...
+        if request.json["action"] == "save":
+            text = request.json["save"]
+            current_entry.update_text(text)
+            current_entry.update_name(request.json["name"])
+
+        # If we're deleting the current doc...
+        if request.json["action"] == "delete":
+            current_entry.delete()
+            current_entry = previous_entry
+            next_entry = current_entry.get_next()
+            previous_entry = current_entry.get_previous()
+
+    return render_template('edit.html', project=project, entry=current_entry, next=next_entry, prev=previous_entry,
+                           viewer_start=page_num, images=image_paths)
+
+
 @app.route('/<project_id>/cleanup')  # TODO: DB-ify
 def cleanup(project_id):
     files_to_save = [f"{project_id}.pdf", "entries.json"]
@@ -259,12 +324,10 @@ def cleanup(project_id):
     return redirect(url_for("project", project_id=project_id))
 
 
-@app.route('/<project_id>/export') # FIXME: DB-ify
+@app.route('/<project_id>/export')
 def export(project_id):
-    project = Project.objects(id=project_id).first()
-
-    path = project.entries_to_json(file=True)
-    return send_file(path, as_attachment=True, attachment_filename=f"{project.name}_entries.json")
+    p = Project.get_by_id(project_id)
+    return render_template('export.html', project=p)
 
 
 @app.route('/<project_id>/export_txt') # FIXME: DB-ify

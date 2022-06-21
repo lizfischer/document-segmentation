@@ -36,7 +36,9 @@ class Entry(db.Model):
     project = db.relationship('Project', backref=db.backref('entries', cascade='all,delete'), lazy=True)
 
     text = db.Column(db.String)
+    sequence = db.Column(db.Float)
     boxes = db.relationship('BoundingBox', backref='entry', cascade="all,delete", lazy=True)
+    name = db.Column(db.String)
 
     def add_box(self, b):
         db.session.add(self)
@@ -47,6 +49,32 @@ class Entry(db.Model):
         return {"text": self.text,
                 "boxes": [{"x": b.x, "y": b.y, "h": b.h, "w": b.w, "page": b.page}
                           for b in self.boxes]}
+
+    def update_text(self, text):
+        self.text = text.strip()
+        db.session.commit()
+
+    def update_name(self, name):
+        self.name = name.strip()
+        db.session.commit()
+
+    @staticmethod
+    def get_by_id(entry_id):
+        return Entry.query.filter_by(id=entry_id).first()
+
+    @staticmethod
+    def get_first(project_id):
+        return Entry.query.filter_by(project_id=project_id).order_by(Entry.sequence).limit(1).first() #TODO Change to min sequence
+
+    def get_next(self):
+        return Entry.query.filter_by(project_id=self.project.id).filter(Entry.sequence > self.sequence).order_by(Entry.sequence).limit(1).first()
+
+    def get_previous(self):
+        return Entry.query.filter_by(project_id=self.project.id).filter(Entry.sequence < self.sequence).order_by(Entry.sequence.desc()).limit(1).first()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
 
 
 class Threshold(db.Model):
@@ -89,7 +117,6 @@ class Threshold(db.Model):
     @staticmethod
     def get_by_id(threshold_id):
         return Threshold.query.filter_by(id=threshold_id).first()
-
 
 
 class Gap(db.Model):

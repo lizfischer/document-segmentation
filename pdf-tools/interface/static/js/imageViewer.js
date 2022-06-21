@@ -1,4 +1,4 @@
-function initViewer(images, start_adjustment=0,url_for=true){
+function initViewer(images, start_adjustment=0,url_for=true, start_pg=0){
 
     var currentImg = 0;
     var img = new Image();
@@ -85,6 +85,7 @@ function initViewer(images, start_adjustment=0,url_for=true){
     $("#viewer-controls").append(lastButton);
     $("#imgviewer").append(img);
     console.log("Done!")
+    goTo(start_pg);
 }
 
 
