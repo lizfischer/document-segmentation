@@ -9,14 +9,17 @@
             <div id="imgviewer"></div>
         </div>
         <div  style="display:inline-block; width:50vw; height:90vh">
-            <div style="height: 10vh">
+            <div style="height: 10vh; text-align: center">
+                <button id="undo" class="tooltip" data-tooltip="Undo unsaved changes (does not effect join/split/delete!)"><i class="fa-solid fa-rotate-left"></i></button>
                 <button id="save" class="tooltip" data-tooltip="Save changes to text"><i class="fa-solid fa-floppy-disk"></i></button>
                 <button id="delete-entry" class="tooltip" data-tooltip="Delete entry"><i class="fa-solid fa-trash-can"></i></button>
                 <button id="split-at" class="tooltip" data-tooltip="Split entry at cursor location"><i class="fa-solid fa-i-cursor"></i> <i class="fa-solid fa-scissors"></i></button>
-                {% if prev %} <button id="join" class="tooltip" data-tooltip="Join with previous entry"><i class="fa-solid fa-caret-left"></i><i class="fa-solid fa-object-group"></i></button>{% endif %}
-                {% if prev %}<button id="prev-btn"><i class="fa-solid fa-arrow-left-long"></i></button>{% endif %}
-                {% if next %}<button id="next-btn"><i class="fa-solid fa-arrow-right-long"></i></button>{% endif %}
-
+                <button {% if not prev %} disabled {% endif %} id="join" class="tooltip" data-tooltip="Join with previous entry"><i class="fa-solid fa-caret-left"></i><i class="fa-solid fa-object-group"></i></button>
+                <button id="find-replace" class="tooltip" data-tooltip="Find and replace"><i class="fa-solid fa-magnifying-glass"></i><i class="fa-solid fa-arrows-rotate"></i></button>
+                <button {% if not prev %} disabled {% endif %} id="prev-btn" class="tooltip" data-tooltip="Previous entry"><i class="fa-solid fa-arrow-left-long"></i></button>
+                <button {% if not next %} disabled {% endif %} id="next-btn" class="tooltip" data-tooltip="Next entry"><i class="fa-solid fa-arrow-right-long"></i></button>
+                <br>
+            <span id="find-replace-wrapper" style="display:none"><input type="text" id="find-regex" placeholder="Find (supports regex)"><input type="text" id="replace-regex" placeholder="Replace"><button id="do-replace"><i class="fa-solid fa-circle-arrow-right"></i></button></span>
             </div>
             <label>Enter an identifier for this document: <input id="doc-id" input size="40" type="text" value="{{ entry.name if entry.name is not none }}"></label>
             <textarea id="document-text" style="display:inline-block; width:50vw; height:80vh">{{ entry.text }}</textarea>
@@ -29,124 +32,17 @@
     </div>
 
     <script type="text/javascript">
-    $(document).ready(function (){
-
          /** Load Images **/
         var images = {{ images|tojson }};
         initViewer(images, 0, true, {{ viewer_start-1 }});
 
-        $('#doc-id').focus();
-        /* Trigger "next" on enter in id field */
-        $('#doc-id').keypress(function (e) {
-         var key = e.which;
-         if(key == 13)  // the enter key code
-          {
-            $('#next-btn').click();
-            return false;
-          }
-        });
-
-        /* next */
-        $("#next-btn").click(function (){
-            d = {
-                action: "save",
-                save: $("#document-text").val(),
-                entry: {{entry.id}},
-                name: $("#doc-id").val()
-            }
-
-            post_edits(d, function (){
-                window.location.href = "{{ url_for('edit_segments', project_id=project.id, entry=next.id) }}";
-            });
-        });
-        /* previous */
-        $("#prev-btn ").click(function (){
-            d = {
-                action: "save",
-                save: $("#document-text").val(),
-                entry: {{entry.id}},
-                name: $("#doc-id").val()
-            }
-
-            post_edits(d, function (){
-                window.location.href = "{{ url_for('edit_segments', project_id=project.id, entry=prev.id) }}";
-            });
-        });
-
-
-        /* Trigger split */
-        $("#split-at").click(function (){
-            var split_at = $("#document-text").prop("selectionStart");
-            new_start_page = window.prompt("New entry starts on page:", "");
-
-            if (!isNaN(new_start_page) && new_start_page){
-                post_edits({
-                    action: "split",
-                    split_page: new_start_page,
-                    offset: split_at,
-                    text: $("#document-text").val(),
-                    entry: {{entry.id}}
-                }, function (){
-                    window.location.href = "{{ url_for('edit_segments', project_id=project.id, entry=entry.id) }}";
-                });
-            }
-        });
-
-        /* Trigger join */
-        $("#join").click(function (){
-            post_edits({
-                action: "join",
-                text: $("#document-text").val(),
-                entry: {{entry.id}}
-            }, function (){
-                window.location.href = "{{ url_for('edit_segments', project_id=project.id, entry=prev.id) }}";
-            });
-        });
-
-
-        /* Save text */
-        $("#save").click(function (){
-            d = {
-                action: "save",
-                save: $("#document-text").val(),
-                entry: {{entry.id}},
-                name: $("#doc-id").val()
-            }
-
-            post_edits(d, function (){
-                window.location.href = "{{ url_for('edit_segments', project_id=project.id, entry=entry.id) }}";
-            });
-        });
-
-        /* Delete text */
-        $("#delete-entry").click(function (){
-            if (confirm("Are you sure you want to delete this entry?")) {
-                d = {
-                    action: "delete",
-                    entry: {{entry.id}}
-                }
-
-                post_edits(d, function () {
-                    window.location.href = "{{ url_for('edit_segments', project_id=project.id, entry=next.id) }}";
-                });
-            }
-        });
-
-        function post_edits(data, callback=null){
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "{{ url_for('edit_segments', project_id=project.id) }}", true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.onreadystatechange = function () {
-              if (xhr.readyState === XMLHttpRequest.DONE) {
-                  if (callback) {
-                      callback();
-                  }
-              }};
-
-            xhr.send(JSON.stringify(data));
-        }
-
-    });
+        let entry_id = "{{entry.id}}";
+        let entry_url = "{{ url_for('edit_segments', project_id=project.id, entry=entry.id) }}";
+        let next_url = "{{ url_for('edit_segments', project_id=project.id, entry=next.id) }}";
+        let prev_url = "{{ url_for('edit_segments', project_id=project.id, entry=prev.id) }}";
+        let post_url = "{{ url_for('edit_segments', project_id=project.id) }}";
     </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/page_scripts/edit.js') }}"></script>
+
 
 {% endblock %}

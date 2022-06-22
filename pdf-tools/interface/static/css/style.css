@@ -1,3 +1,6 @@
+.tooltip::after{
+    max-width: none !important;
+}
 .container {
     width: 80% !important;
     margin: auto !important;
