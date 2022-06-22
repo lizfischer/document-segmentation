@@ -19,7 +19,7 @@ $(document).ready(function (){
             let start = $('#document-text').prop("selectionStart");
             let finish = $('#document-text').prop("selectionEnd");
             let sel = $('#document-text').val().substring(start, finish);
-            $("#doc-id").val(sel.trim());
+            $("#doc-id").val(sel.trim().replace(/ +/gm," "));
             $('#doc-id').focus();
             return false;
         }

@@ -292,9 +292,10 @@ def edit_segments(project_id):
 
         # If we're saving the current doc...
         if request.json["action"] == "save":
-            text = request.json["save"]
-            current_entry.update_text(text)
-            current_entry.update_name(request.json["name"])
+            if request.json["save"] != current_entry.text:
+                current_entry.update_text(request.json["save"])
+            if request.json["name"] != current_entry.name:
+                current_entry.update_name(request.json["name"])
 
         # If we're deleting the current doc...
         if request.json["action"] == "delete":
