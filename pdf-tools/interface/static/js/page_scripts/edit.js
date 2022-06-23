@@ -1,4 +1,8 @@
 $(document).ready(function (){
+    /** Update Steps **/
+    $(".step-item").removeClass("active");
+    $("#edit").addClass("active");
+
 
 
     $('#doc-id').focus();
