@@ -278,6 +278,8 @@ def edit_segments(project_id):
             for b in current_entry.boxes:
                 if b.page >= split_page:
                     new_entry.add_box(BoundingBox(entry_id=new_entry.id, page=b.page, x=b.x, y=b.y, w=b.w, h=b.h))
+            if not new_entry.boxes: #add last box if none were added
+                new_entry.add_box(BoundingBox(entry_id=new_entry.id, page=b.page, x=b.x, y=b.y, w=b.w, h=b.h))
             current_entry.update_text(keep)
 
         # If we're joining docs....
@@ -331,7 +333,7 @@ def export(project_id):
     return render_template('export.html', project=p)
 
 
-@app.route('/<project_id>/export_txt') # FIXME: DB-ify
+@app.route('/<project_id>/export_txt')
 def export_txt(project_id):
     project = Project.get_by_id(project_id)
 

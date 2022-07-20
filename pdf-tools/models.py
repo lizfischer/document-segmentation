@@ -33,7 +33,7 @@ class BoundingBox(db.Model):
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
-    project = db.relationship('Project', backref=db.backref('entries', cascade='all,delete'), lazy=True)
+    project = db.relationship('Project', backref=db.backref('entries', cascade='all,delete'), lazy=True, order_by="Entry.sequence")
 
     text = db.Column(db.String)
     sequence = db.Column(db.Float)
@@ -351,8 +351,13 @@ class Project(db.Model):
         if not os.path.exists(directory):
             os.mkdir(directory)
         for i in range(0, len(self.entries)):
-            with open(os.path.join(directory, f"{self.name}_entry-{i}.txt"), 'w') as f:
-                f.write(self.entries[i].text)
+            entry = self.entries[i]
+            if entry.name:
+                filename = f"{self.name}_entry-{entry.sequence}_{entry.name}.txt"
+            else:
+                filename = f"{self.name}_entry-{entry.sequence}.txt"
+            with open(os.path.join(directory, filename), 'w') as f:
+                f.write(entry.text)
         return directory
 
     def delete(self):

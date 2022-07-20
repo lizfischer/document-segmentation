@@ -57,7 +57,7 @@
 </form>
 
 <div id="progress"></div>
-<button id="next-button" class="btn" style="display: none">Next Step <i class="fa-solid fa-arrow-right"></i></button>
+<a href="{{ url_for('export', project_id=project.id) }}" style="display: none" id="next-button"><button class="btn" >Next Step <i class="fa-solid fa-arrow-right"></i></button></a>
 
 <!-- TASK SCRIPT -->
 <script type="text/javascript">

@@ -7,11 +7,11 @@ import parse_rules
 
 
 @celery.task(bind=True)
-def extract_task(self, project_id, pct):
+def extract_task(self, project_id):
     project = Project.get_by_id(project_id)
 
     if len(project.pages) == 0:  # If pdf hasn't been converted to images yet
-        export_pdf_images(project)
+        export_pdf_images(project, task=self)
 
     return {'current': 100, 'total': 100, 'status': 'Done',
             'result': "PDF to images successful"}

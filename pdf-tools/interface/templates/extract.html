@@ -2,7 +2,7 @@
 
 {% block module %}
     <p>First, your PDF needs to be converted to images.</p>
-    <button class="btn" id="extract">Start conversion</button>
+    <button class="btn" id="extract-btn">Start conversion</button>
 
     <div id="progress"></div>
 
@@ -23,8 +23,8 @@ $(document).ready(function (){
          $("#next").show();
      }
 
-    $('#extract').click(function (){
-        start_long_task("binarize", {{project.id}}, null, finished_extract);
+    $('#extract-btn').click(function (){
+        start_long_task("extract", {{project.id}}, null, finished_extract);
         $("#extract").attr('disabled', true);
     });
 

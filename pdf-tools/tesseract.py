@@ -76,6 +76,7 @@ def get_simple_format_text(df, sort=False):
                 text += '\n'
                 prev_line = ln['line_num']
                 prev_left = 0
+            text += ln['text'] + ' '
         text += '\n'
     return text.strip()
 
