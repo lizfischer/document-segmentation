@@ -1,10 +1,29 @@
 import os
+import unicodedata
+import re
 
 from werkzeug.utils import secure_filename
 
 import parse_rules
 from interface import app
-from models import Project
+
+
+def slugify(value, allow_unicode=False):
+    """
+    Taken from https://github.com/django/django/blob/master/django/utils/text.py
+    Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
+    dashes to single dashes. Remove characters that aren't alphanumerics,
+    underscores, or hyphens. Convert to lowercase. Also strip leading and
+    trailing whitespace, dashes, and underscores.
+    """
+    value = str(value)
+    if allow_unicode:
+        value = unicodedata.normalize('NFKC', value)
+    else:
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s-]', '', value.lower())
+    return re.sub(r'[-\s]+', '-', value).strip('-_')
+
 
 
 def update_status(task, message, current, total, steps=None):
@@ -18,21 +37,6 @@ def update_status(task, message, current, total, steps=None):
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
-
-def initialize_project(file):
-    filename = secure_filename(file.filename)
-    project_name = filename.split(".")[0]
-
-    db_project = Project(name=project_name, file=filename)
-    db_project.create()
-
-    project_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(db_project.id))
-    os.mkdir(project_folder)
-    file_path = os.path.join(project_folder, filename)
-    file.save(file_path)
-
-    return db_project
 
 
 def ignore_handler(project, form_data, task=None, steps=None):

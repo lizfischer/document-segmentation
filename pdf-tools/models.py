@@ -6,7 +6,7 @@ import shutil
 from interface import app
 from interface import db
 from sqlalchemy.orm import validates
-
+from utils import slugify, secure_filename
 
 def get_or_create(session, model, **kwargs):
     instance = session.query(model).filter_by(**kwargs).first()
@@ -246,6 +246,20 @@ class Project(db.Model):
     is_binarized = db.Column(db.Boolean(), default=False)
     has_gaps = db.Column(db.Boolean(), default=False)
 
+    def __init__(self, file):
+        filename = secure_filename(file.filename)
+        project_name = filename.split(".")[0]
+        self.name = project_name
+        self.file = filename
+        #db_project = Project(name=project_name, file=filename)
+        self.create()
+
+        project_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(self.id))
+        os.mkdir(project_folder)
+        file_path = os.path.join(project_folder, filename)
+        file.save(file_path)
+
+
     def __repr__(self):
         return f'<Project {self.name}>'
 
@@ -353,9 +367,10 @@ class Project(db.Model):
         for i in range(0, len(self.entries)):
             entry = self.entries[i]
             if entry.name:
-                filename = f"{self.name}_entry-{entry.sequence}_{entry.name}.txt"
+                filename = f"{self.name}_entry-{entry.sequence}_{entry.name}"
             else:
-                filename = f"{self.name}_entry-{entry.sequence}.txt"
+                filename = f"{self.name}_entry-{entry.sequence}"
+            filename = f"{slugify(filename)}.txt"
             with open(os.path.join(directory, filename), 'w') as f:
                 f.write(entry.text)
         return directory

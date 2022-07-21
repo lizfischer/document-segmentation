@@ -7,7 +7,7 @@ from flask import render_template, request, redirect, url_for, flash, send_file,
 import parse_rules
 from find_gaps import find_gaps
 from image_generation import export_pdf_images, split_images
-from utils import allowed_file, initialize_project, ignore_handler
+from utils import allowed_file, ignore_handler
 from models import *
 from interface import tasks, celery
 
@@ -110,7 +110,7 @@ def upload():
             flash('Invalid file format', "error")
             return redirect(request.url)
         if file and allowed_file(file.filename):
-            new_project = initialize_project(file)
+            new_project = Project(file)
             return redirect(url_for('project', project_id=new_project.id))
     return render_template("upload.html")
 
