@@ -1,0 +1,56 @@
+<!doctype html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+
+    <!-- Basic -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <script src="https://kit.fontawesome.com/898fbad675.js" crossorigin="anonymous"></script>
+
+    <!-- Frontend framework -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/spectre.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/spectre-exp.min.css') }}">
+
+    <!-- Annotorious-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/annotorious.min.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/annotorious.min.js') }}"></script>
+
+    <!-- Image viewer -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/imageViewer.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/imageViewer.js') }}"></script>
+
+    <!-- Async tasks -->
+    <script type="text/javascript" src="{{ url_for('static', filename='js/taskRunner.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/nanobar.min.js') }}"></script>
+
+
+</head>
+
+
+
+<div class="container">
+
+    <header class="navbar">
+        <section class="navbar-section">{% block header_left %}{% endblock %}</section>
+        <section class="navbar-center">{% block header_center %}{% endblock %}</section>
+        <section class="navbar-section">{% block header_right %}{% endblock %}</section>
+        {% block header %}{% endblock %}
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class=flashes>
+        {% for category, message in messages %}
+            <div class="toast toast-{{ category }}">
+                <button class="btn btn-clear float-right"></button>
+                {{ message }}
+            </div>
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+  {% block content %}{% endblock %}
+
+</div>

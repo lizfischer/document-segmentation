@@ -1,0 +1,120 @@
+{% extends "workflow.html" %}
+
+{% block module %}
+<h2>Threshold Settings</h2>
+<form onsubmit="event.preventDefault()" id="">
+    <label for="h_width">Minimum width of a horizontal gap (higher = fewer gaps)</label>
+    <input type="text" id="h_width" name="h_width" value="{{ thresh.h_width }}"><br>
+    <label for="h_blank">Maximum pct of blank pixels in a horizontal line to "count" it as blank (higher = more gaps)</label>
+    <input type="text" id="h_blank" name="h_blank" value="{{ thresh.h_blank }}"><br>
+
+
+    <label for="v_width">Minimum width of a vertical gap</label>
+    <input type="text" id="v_width" name="v_width" value="{{ thresh.v_width }}"><br>
+    <label for="v_blank">Maximum pct of blank pixels in a vertical line to "count" it as blank</label>
+    <input type="text" id="v_blank" name="v_blank" value="{{ thresh.v_blank}}"><br>
+
+    <br>
+    <label for="preview">Preview results on: </label>
+    <select id="preview" name="preview">
+        <option value="range">pages in the range </option>
+        <option value="all">all pages </option>
+    </select>
+    <span id="pg-range-wrap">
+        <input type="text" id="start" size="1" name="start" value="{{ start + 1 }}"> to
+        <input type="text" id="end" size="1" name="end" value="{{ end }}"> <br>
+    </span>
+    <p id="warning-all" hidden class="warning">Warning! Previewing on all pages might take a while if your file is large.</p>
+    <p id="warning-long" hidden class="warning">Warning! Previewing this many pages might take a while.</p>
+    <br>
+    <button onclick="submitForm()" id="submit-button" type="button" class="btn btn-primary">Submit</button>
+</form>
+
+<br>
+<a class="display:none;" href="{{ url_for('simple_separate_ui', project_id=project.id) }}"><button class="btn">Finished here, ready to write rules <i class="fa-solid fa-arrow-right"></i></button></a>
+
+<div id="progress"></div>
+
+<!-- TASK SCRIPT -->
+<script type="text/javascript">
+$(document).ready(function (){
+    /** Update Steps **/
+    $(".step-item").removeClass("active");
+    $("#workflow-margins").addClass("active");
+
+});
+
+function submitForm(){
+    const specs = {
+            "h_width": $("#h_width").val(), "h_blank": $("#h_blank").val(),
+            "v_width": $("#v_width").val(), "v_blank": $("#v_blank").val(),
+            "preview": $("#preview").val(), "start": $("#start").val()-1, "end": $("#end").val()
+        }
+    $("#submit-button").attr('disabled', true);
+    $("#next-button").hide();
+    start_long_task("thresholds", {{project.id}}, specs, finished_margins)
+}
+ function finished_margins(data){
+    console.log("Finished preparing margins");
+    const start = data["preview"]["start"];
+    const end = data["preview"]["end"];
+    const url = `/{{project.id}}/threshold-preview?t=${data["thresh_id"]}&start=${start}&end=${end}`;
+    window.location.href = url;
+ }
+</script>
+
+<!-- IMAGE VIEWER -->
+<div id="imgviewer"></div>
+<script type="text/javascript">
+    $(document).ready(function() {
+        var data = {{ data|tojson }}
+        var start = {{ start }}
+        var images = Array.from(data, x => x["img"])
+        initViewer(images, start);
+
+        var annotorious = Annotorious.init({
+            image: "activeImage",// image element or ID
+            disableEditor: true,
+            allowEmpty: true,
+            readOnly: true
+        });
+
+        var activeImage = document.querySelector('#activeImage');
+
+        activeImage.addEventListener('load', function () {
+            var pg = $("#currentPg").val();
+            var anno = JSON.parse(data[pg-1-start]["anno"])
+            annotorious.setAnnotations(anno);
+        });
+    });
+</script>
+
+<!-- FORM CONTROLS -->
+<script type="text/javascript">
+$(document).ready(function () {
+    $("#preview").change(function() {
+        if ($(this).val() == "range") {
+            $("#pg-range-wrap").show();
+            $("#warning-all").hide();
+        } else{
+            $("#pg-range-wrap").hide();
+            $("#warning-all").show();
+            $("#warning-long").hide();
+        }
+    });
+    $("#start").change(check_length)
+    $("#end").change(check_length);
+
+});
+
+function check_length(){
+    length = $("#end").val() - $("#start").val();
+    console.log(length);
+    if (length > 50) {
+        $("#warning-long").show();
+    } else{
+        $("#warning-long").hide();
+    }
+}
+</script>
+{% endblock %}

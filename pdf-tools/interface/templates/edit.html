@@ -1,0 +1,48 @@
+{% extends "workflow.html" %}
+
+{% block module %}
+    <div style="display: flex;
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);">
+        <div style="display: inline-block; width: 50vw">
+            <div id="imgviewer"></div>
+        </div>
+        <div  style="display:inline-block; width:50vw; height:90vh">
+            <div style="height: 10vh; text-align: center">
+                <button id="undo" class="tooltip" data-tooltip="Undo unsaved changes (does not effect join/split/delete!)"><i class="fa-solid fa-rotate-left"></i></button>
+                <button id="save" class="tooltip" data-tooltip="Save changes to text"><i class="fa-solid fa-floppy-disk"></i></button>
+                <button id="delete-entry" class="tooltip" data-tooltip="Delete entry"><i class="fa-solid fa-trash-can"></i></button>
+                <button id="split-at" class="tooltip" data-tooltip="Split entry at cursor location"><i class="fa-solid fa-i-cursor"></i> <i class="fa-solid fa-scissors"></i></button>
+                <button {% if not prev %} disabled {% endif %} id="join" class="tooltip" data-tooltip="Join with previous entry"><i class="fa-solid fa-caret-left"></i><i class="fa-solid fa-object-group"></i></button>
+                <button id="find-replace" class="tooltip" data-tooltip="Find and replace"><i class="fa-solid fa-magnifying-glass"></i><i class="fa-solid fa-arrows-rotate"></i></button>
+                <button {% if not prev %} disabled {% endif %} id="prev-btn" class="tooltip" data-tooltip="Previous entry"><i class="fa-solid fa-arrow-left-long"></i></button>
+                <button {% if not next %} disabled {% endif %} id="next-btn" class="tooltip" data-tooltip="Next entry"><i class="fa-solid fa-arrow-right-long"></i></button>
+                <br>
+            <span id="find-replace-wrapper" style="display:none"><input type="text" id="find-regex" placeholder="Find (supports regex)"><input type="text" id="replace-regex" placeholder="Replace"><button id="do-replace"><i class="fa-solid fa-circle-arrow-right"></i></button></span>
+            </div>
+            <label>Enter an identifier for this document: <input id="doc-id" input size="40" type="text" value="{{ entry.name if entry.name is not none }}"></label>
+            <textarea id="document-text" style="display:inline-block; width:50vw; height:80vh">{{ entry.text }}</textarea>
+
+            {% if next %}
+                <p>Preview of next entry:</p>
+                <textarea readonly style="display:inline-block; width:50vw; height:5vh">{{ next.text[0:100] }}</textarea>
+            {% endif %}
+        </div>
+    </div>
+
+    <script type="text/javascript">
+         /** Load Images **/
+        var images = {{ images|tojson }};
+        initViewer(images, 0, true, {{ viewer_start-1 }});
+
+        let entry_id = "{{entry.id}}";
+        let entry_url = "{{ url_for('edit_segments', project_id=project.id, entry=entry.id) }}";
+        let next_url = "{{ url_for('edit_segments', project_id=project.id, entry=next.id) }}";
+        let prev_url = "{{ url_for('edit_segments', project_id=project.id, entry=prev.id) }}";
+        let post_url = "{{ url_for('edit_segments', project_id=project.id) }}";
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/page_scripts/edit.js') }}"></script>
+
+
+{% endblock %}

@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  pdf-tools:
+    build: .
+    container_name: pdf-tools
+    ports:
+      - "5000:5000"
+    # command: python -m flask run --host=0.0.0.0 # change command here if needed!
+    environment:
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - ./:/app
+    depends_on: ["redis", "celery"]   # gotta have the queue running first!
+
+
+  celery:
+    build: .
+    container_name: celery
+    environment:
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - ./:/app
+    command: celery --app interface.celery worker --loglevel=info
+    depends_on: [ "redis" ]  # gotta have the queue running first!
+
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    container_name: redis

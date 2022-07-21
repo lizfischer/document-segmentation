@@ -1,0 +1,27 @@
+.tooltip::after{
+    max-width: none !important;
+}
+.container {
+    width: 80% !important;
+    margin: auto !important;
+    max-width: 1000px;
+}
+.project-name-wrap {
+    display: flex;
+}
+.project-name-wrap #rename-btn{
+    height: 1em;
+    margin: 10px;
+}
+.project-name-wrap #rename-btn > i {
+    height: 1em;
+    cursor: pointer;
+}
+ul.project-list > li.project > a {
+    text-decoration: none;
+    font-size: large;
+}
+
+.block-gap{
+    margin-bottom: 5px;
+}

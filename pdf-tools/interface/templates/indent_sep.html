@@ -1,0 +1,89 @@
+{% extends "project.html" %}
+
+
+{% block module %}
+
+<form method="post">
+
+    <fieldset>
+        <legend>Ignoring headers, footers, & marginalia</legend>
+        Ignore text <span id="ignore-wrap-0">
+                <select id="ignore-position-0" name="ignore-position-0">
+                    <option value="above">above the first</option>
+                    <option value="below">below the last</option>
+                    <option value="left">left of the first</option>
+                    <option value="right">right of the last</option>
+                </select>
+            <input name="ignore-num-0" type="text" maxlength="2" size="1"> gap(s)
+            with a minimum size of <input name="ignore-width-0" type="text" maxlength="3" size="1"> px
+            and blankness threshold of <input name="ignore-blank-0" type="text" maxlength="4" size="1">
+        </span>
+        <br>
+
+        <span id="ignore-wrap-1" style="display: none;">
+             and
+            <select id="ignore-position-1" name="ignore-position-1">
+                    <option value="above">above the first</option>
+                    <option value="below">below the last</option>
+                    <option value="left">left of the first</option>
+                    <option value="left">right of the last</option>
+                </select>
+            <input name="ignore-num-1" type="text" value="1" maxlength="2" size="1"> gap(s)
+            with a minimum size of <input name="ignore-width-1" type="text" maxlength="3" size="1"> px
+            and blankness threshold of <input name="ignore-blank-1" type="text" maxlength="4" size="1">
+        </span>
+
+        <input type="button" value="+" id="ignore-more">
+    </fieldset>
+
+    <fieldset>
+        <legend>Entry splitting</legend>
+        New entries start when there is
+         <select id="indent-type" name="indent-type">
+            <option value="hanging">a hanging indent</option>
+            <option value="regular">a regular indent</option>
+        </select> <br>
+        <span id="gap-size-wrap-hanging">
+            The first line of each entry starts to the LEFT of the margin line when the margin blankness threshold is set to
+            <input name="hanging-blank" type="text" maxlength="4" size="1">.
+        </span>
+        <span id="gap-size-wrap-regular" hidden>
+            The first line of each entry starts to the RIGHT of the margin line when the margin blankness threshold is set to
+            <input name="hanging-blank" type="text" maxlength="4" size="1">.
+            The indent size is at least <input name="regular-width" type="text" maxlength="4" size="1" value="0" >pixels.
+        </span>
+        <br>
+
+    </fieldset>
+    <input type="submit" value="Submit">
+</form>
+
+{{ status if status }}
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+$(document).ready(function () {
+    $("#indent-type").change(function() {
+        if ($(this).val() == "hanging") {
+            $("#gap-size-wrap-hanging").show();
+            $("#gap-size-wrap-regular").hide();
+        } else{
+            $("#gap-size-wrap-hanging").hide();
+            $("#gap-size-wrap-regular").show();
+        }
+    });
+
+    $("#ignore-more").click(function(){
+        if ($(this).val() == "+"){
+            $(this).prop("value", "X");
+        } else {
+            $(this).prop("value", "+");
+        }
+
+        $("#ignore-wrap-1").toggle();
+    });
+
+});
+</script>
+{% endblock %}

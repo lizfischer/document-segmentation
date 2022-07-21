@@ -1,0 +1,166 @@
+{% extends "workflow.html" %}
+
+{% block module %}
+
+{% if not confirm %}
+<div id="split-question">
+    <p>Does each page of this PDF show text in a single column? Sometimes books are scanned to show two pages at a time,
+        or the source material may have multiple columns per page.</p>
+
+    <div id="one-column" class="btn d-block block-gap" >Yes, there is <b>one</b> column of text per page.</div> <!-- Go to binarize -->
+    <div id="do-split" class="btn d-block block-gap">No, there are <b>exactly two</b> columns per PDF page.</div> <!-- Go to split-->
+    <div id="cant-split" class="btn d-block block-gap">No, there are <b>more than two</b> columns per PDF page.</div> <!-- Go to other splitting instructions-->
+</div>
+
+<div id="outside-split" hidden>
+    <p>Please use an external tool to split your PDF so there is only one column of text per page.
+        If you have access to Adobe Acrobat...</p>
+    <p>When you're finished, <a href="{{ url_for('upload') }}">create a new project with the new PDF.</a></p>  <!-- Go to re-upload-->
+</div>
+
+<div id="split-form" hidden>
+    <p>Use the form below to split your PDF. </p>
+
+    <form method="post">
+        Split
+        <input id="split_pct" name="split_pct" value="50.0" max="100" min="0" maxlength="4" step=".5" type="number" size="3">
+        % of the way across each image
+        <input type="button" class="btn" id="test-button" value="Test Value">
+        <input id="submit-split" class="btn btn-primary" value="Commit, do the split">
+    </form>
+
+</div>
+{% else %} <!-- TODO: FINISH THIS!!! -->
+    <a class="btn p-centered m-2" href="{{ url_for('split_file', project_id=project.id, redo=True)}}"> <i class="fa-solid fa-rotate-left"></i>Redo...</a>
+    <a class="btn btn-primary p-centered m-2" href="{{ url_for('binarize', project_id=project.id) }}">Looking good? Next step <i class="fa-solid fa-arrow-right"></i></a>
+
+{% endif %}
+
+<div id="progress"></div>
+
+<div id="imgviewer"></div>
+
+<style>
+    .a9s-annotation .a9s-inner {
+        stroke-width:1px;
+        stroke: #dcc942;
+        fill: rgb(220, 201, 66);
+        -webkit-filter:drop-shadow(0 0 10px rgb(220, 201, 66));
+            filter:drop-shadow(0 0 10px rgb(220, 201, 66));
+    }
+    .a9s-annotation .a9s-outer {
+        stroke: #a9982b;
+    }
+    .a9s-annotation .a9s-inner:hover {
+        stroke-width:2px;
+        stroke: #dcc942;
+        fill: rgb(220, 201, 66);
+    }
+</style>
+
+<script type="text/javascript">
+$(document).ready(function(){
+
+    /** Update Steps **/
+    $(".step-item").removeClass("active");
+    $("#workflow-split").addClass("active");
+    $("#workflow-split").nextAll().find('a').css({"pointer-events": "none"});
+
+    /** HANDLE FORM **/
+    $('#submit-split').click(function (){
+        const pct = $("#split_pct").val();
+        start_long_task("split", {{project.id}}, pct, finished_split);
+        $("#imgviewer").hide();
+        $("#submit-split").attr('disabled', true);
+
+    });
+    function finished_split(){
+        window.location.href = "{{ url_for('split_file', project_id=project.id, confirm=True)}}"
+    }
+
+     /** Load Images **/
+    var images = {{ images|tojson }};
+    initViewer(images);
+
+    /** GO TO BINARIZE **/
+    $("#one-column").click(function (){
+        window.location.href = "{{ url_for('binarize', project_id=project.id) }}";
+    });
+
+    /** SHOW EXTERNAL SPLITTING ADVICE **/
+    $("#cant-split").click(function (){
+       $("#outside-split").show();
+        $("#split-question .btn").addClass("disabled")
+        $(this).removeClass("disabled");
+        $(this).addClass("active");
+    });
+
+    /** SHOW SPLITTING FUNCTIONS **/
+    $("#do-split").click(function (){
+        $("#split-form").show();
+        $("#split-question .btn").addClass("disabled")
+        $(this).removeClass("disabled");
+        $(this).addClass("active");
+
+        activeImage.addEventListener('load', function (){
+        setAnno(pct)
+    });
+        setAnno(pct);
+    });
+
+    $("#cant-split")
+
+    /** Init split form **/
+   /** Split Form Handling **/
+    $("#test-button").click(function (){
+        pct = $("#split_pct").val();
+        setAnno(pct);
+    });
+
+
+    var pct = {{pct|tojson}}*100
+    var activeImage = document.querySelector('#activeImage');
+    activeImage.addEventListener('error', function (){
+        alert("Something went wrong, please try again")
+    })
+    var annotorious = Annotorious.init({
+            image: "activeImage",// image element or ID
+            disableEditor: true,
+            allowEmpty: true,
+            readOnly: true
+          });
+    var anno_id = "#a88b22d0-6106-4872-9435-c78b5e89fede"
+    function setAnno(pct){
+        console.log("Adding at " + pct);
+        var x = $("#activeImage").get(0).naturalWidth*pct/100;
+        var height = $("#activeImage").get(0).naturalHeight;
+        line = "xywh=pixel:"+x+",0,1,"+height;
+        console.log(line)
+        annotorious.setAnnotations([{
+              "@context": "http://www.w3.org/ns/anno.jsonld",
+              "id": anno_id,
+              "type": "Annotation",
+              "body": [],
+              "target": {
+                "selector": {
+                  "type": "FragmentSelector",
+                  "conformsTo": "http://www.w3.org/TR/media-frags/",
+                  "value": line
+                }
+              }
+            }]);
+    }
+
+    // Prevent enter from submitting form
+    $('form input').on('keypress', function(e) {
+        var keyCode = e.keyCode || e.which;
+        if (keyCode === 13) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+
+{% block header_left %}
+    <a class="btn" href="{{ url_for('project', project_id=project.id) }}"><< Project Dashboard</a>
+{% endblock %}
+{% block header_center %}
+        <div class="project-name-wrap">
+            <h1>{{ project.name }}</h1>
+        </div>
+{% endblock %}
+
+
+{% block content %}
+    <ul class="step">
+      <li class="step-item tooltip active" id="extract" data-tooltip="Convert PDF to images">
+        <a href="{{ url_for('pdf_to_images', project_id=project.id) }}">Extract images</a>
+      </li>
+      <li class="step-item tooltip" id="workflow-split" data-tooltip="Separate multi-column pages">
+        <a href="{{ url_for('split_file', project_id=project.id) }}">Split pages</a>
+      </li>
+      <li class="step-item tooltip" id="workflow-binarize" data-tooltip="Convert images to binary matrices">
+        <a href="{{ url_for('binarize', project_id=project.id) }}">Binarize images</a>
+      </li>
+      <li class="step-item tooltip" data-tooltip="Prepare to write separation rules" id="workflow-margins">
+        <a href="{{ url_for('threshold_preview', project_id=project.id) }}" >Experiment with thresholds</a>
+      </li>
+      <li class="step-item tooltip" id="separate" data-tooltip="Split the PDF into text entries based on your rules">
+        <a href="{{ url_for('simple_separate_ui', project_id=project.id) }}">Build rules & separate</a>
+      </li>
+      <li class="step-item tooltip" id="export-step" data-tooltip="Save the data in a variety of formats">
+        <a href="{{ url_for('export', project_id=project.id) }}">Export data</a>
+      </li>
+      <li class="step-item tooltip" id="edit" data-tooltip="Correct separation & OCR">
+        <a href="{{ url_for('edit_segments', project_id=project.id) }}">Edit entries</a>
+      </li>
+    </ul>
+
+    {% block module %}
+
+    {% endblock %}
+
+
+{% endblock %}
