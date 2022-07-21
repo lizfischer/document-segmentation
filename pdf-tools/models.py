@@ -367,10 +367,9 @@ class Project(db.Model):
         for i in range(0, len(self.entries)):
             entry = self.entries[i]
             if entry.name:
-                filename = f"{self.name}_entry-{entry.sequence}_{entry.name}"
+                filename = f"{self.name}_entry-{entry.sequence}_{slugify(entry.name)}"
             else:
                 filename = f"{self.name}_entry-{entry.sequence}"
-            filename = f"{slugify(filename)}.txt"
             with open(os.path.join(directory, filename), 'w') as f:
                 f.write(entry.text)
         return directory
