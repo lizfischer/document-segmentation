@@ -52,5 +52,13 @@ Once your PDF is uploaded, you will be taken to the Project page. By default, yo
 ![image](https://user-images.githubusercontent.com/7800842/233445028-867a8a65-b204-4500-b1b6-eb1c4b8be06e.png)
 
 ## Export Data
+![image](https://user-images.githubusercontent.com/7800842/233445647-f2afe7cb-055d-438e-87b2-fff6bc44b47b.png)
+![image](https://user-images.githubusercontent.com/7800842/233445754-41ac7b0c-9d20-4304-96d8-90baae06ee17.png)
 
 ## Edit Entries
+![image](https://user-images.githubusercontent.com/7800842/233446492-6ac29ea0-874d-4759-ba19-aac761a422f1.png)
+
+![image](https://user-images.githubusercontent.com/7800842/233446291-040c1f0f-449b-4ecc-9801-306677be81b8.png)
+
+![image](https://user-images.githubusercontent.com/7800842/233445876-d9af2629-cddb-48ec-9c13-fd66a4af868e.png)
+![image](https://user-images.githubusercontent.com/7800842/233446145-1506862b-4298-4fb2-abe7-9ba3206a5668.png)
