@@ -145,3 +145,5 @@ interface/static/projects/*/pdf_images/*
 interface/static/projects*
 
 *.db-journal
+.idea*
+
