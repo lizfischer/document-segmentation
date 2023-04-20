@@ -225,6 +225,8 @@ def simple_separate_ui(project_id):
 @app.route('/<project_id>/indent', methods=['GET', 'POST'])
 def indent_separate_ui(project_id):
     status = None
+    project = Project.get_by_id(project_id)
+
 
     if request.method == 'POST':
         form_data = request.form
@@ -239,7 +241,7 @@ def indent_separate_ui(project_id):
         with open(os.path.join(project_folder, "entries.json"), "w") as outfile:
             json.dump(entries, outfile, indent=4)
         status = "done!"
-    return render_template('indent_sep.html', project_id=project_id, status=status)
+    return render_template('indent_sep.html', project=project, status=status)
 
 
 @app.route('/<project_id>/edit', methods=['GET', 'POST'])

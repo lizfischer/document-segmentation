@@ -25,3 +25,7 @@ ul.project-list > li.project > a {
 .block-gap{
     margin-bottom: 5px;
 }
+
+.full-width{
+    width: 100%;
+}
