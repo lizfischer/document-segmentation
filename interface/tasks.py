@@ -52,8 +52,7 @@ def margins_task(self, project_id, specs):
                             'status': 'Preparing threshold preview...'})
 
     if specs:
-        thresh = get_or_create(db.session, Threshold, h_width=float(specs['h_width']), h_blank=float(specs['h_blank']),
-                           v_blank=float(specs['v_blank']), v_width=float(specs['v_width']))
+        thresh = get_or_create(db.session, Threshold, h_width=float(specs['h_width']), h_blank=float(specs['h_blank']))
         if specs["preview"] == "all":
             preview = [0, len(project.pages)]
         else:

@@ -33,7 +33,7 @@
             and blankness threshold of <input id="ignore-blank-1" name="ignore-blank-1" type="text" maxlength="4" size="1">
         </span>
 
-        <input type="button" value="+" id="ignore-more">
+        <span class="tooltip btn btn-sm tooltip-right" data-tooltip="Ignore additional" value="+" id="ignore-more">+</span>
     </fieldset>
 
     <fieldset>
@@ -103,10 +103,13 @@ $(document).ready(function () {
     });
 
     $("#ignore-more").click(function(){
-        if ($(this).val() == "+"){
-            $(this).prop("value", "X");
+        if ($(this).text() == "+"){
+            $(this).text("x");
+            $(this).prop("data-tooltip", "Remove");
         } else {
-            $(this).prop("value", "+");
+            $(this).text("+");
+            $(this).prop("data-tooltip", "Ignore additional");
+
         }
 
         $("#ignore-wrap-1").toggle();
