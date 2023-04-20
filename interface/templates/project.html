@@ -44,7 +44,7 @@
 {% block content %}
     <div class="column col-4">
         <h5>Project Management Options</h5>
-        <a class="btn btn-primary m-1 full-width" href="/14/workflow"><i class="fa-solid fa-circle-play"></i>  Start/Resume Workflow</a>
+        <a class="btn btn-primary m-1 full-width" href="/{{ project.id }}/workflow"><i class="fa-solid fa-circle-play"></i>  Start/Resume Workflow</a>
         <a class="btn m-1 full-width" target="_blank" href="{{ url_for('static', filename='projects/'+ project.id|string +'/'+ project.file ) }}"><i class="fa-regular fa-file-pdf"></i> View source file</a>
         <a href="/14/cleanup" class="d-hide btn m-1 full-width"><i class="fa-solid fa-broom"></i>  Tidy project files</a>
         <span id="delete" class="btn m-1 full-width"><i class="fa-regular fa-trash-can"></i> Delete Project</span>
