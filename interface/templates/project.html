@@ -42,17 +42,31 @@
 {% endblock %}
 
 {% block content %}
-    <li><a href="{{ url_for('workflow', project_id=project.id) }}">Enter workflow</a></li>
-    <li><a href="{{ url_for('cleanup', project_id=project.id) }}"> Remove unnecessary project files </a></li>
-    <li><a id="delete" href="{{ url_for('delete_project', project_id=project.id) }}">Delete Project</a></li>
+    <div class="column col-4">
+        <h5>Project Management Options</h5>
+        <a class="btn btn-primary m-1 full-width" href="/14/workflow"><i class="fa-solid fa-circle-play"></i>  Start/Resume Workflow</a>
+        <a class="btn m-1 full-width" target="_blank" href="{{ url_for('static', filename='projects/'+ project.id|string +'/'+ project.file ) }}"><i class="fa-regular fa-file-pdf"></i> View source file</a>
+        <a href="/14/cleanup" class="d-hide btn m-1 full-width"><i class="fa-solid fa-broom"></i>  Tidy project files</a>
+        <span id="delete" class="btn m-1 full-width"><i class="fa-regular fa-trash-can"></i> Delete Project</span>
+    </div>
+
+
 
     <!--DELETION MODAL-->
     <div id="delete-prompt" class="modal modal-sm">
-      <a href="#close" class="modal-overlay" aria-label="Close"></a>
+      <a href="#close" class="modal-overlay modal-close" aria-label="Close"></a>
       <div class="modal-container">
-          <p>Are you sure you want to delete the project {{ project.name }}?</p>
-          <a id="delete-confirm" class="btn" href="#close">Cancel</a>>
-          <a id="delete-confirm" class="btn" href="{{ url_for('delete_project', project_id=project.id) }}">Delete Project</a>>
+          <div class="modal-header">
+              <button class="btn btn-clear modal-close float-right" aria-label="Close"></button>
+              <div class="modal-title h5">Delete project</div>
+            </div>
+          <div class="modal-body">
+              <p>Are you sure you want to delete the project <span class="label label-secondary">{{ project.name }}</span>?</p>
+              <span id="delete-confirm" class="btn modal-close">Cancel</span>
+              <a id="delete-confirm" class="btn btn-error" href="{{ url_for('delete_project', project_id=project.id) }}">
+                  <i class="fa-regular fa-trash-can"></i> Delete Project
+              </a>
+          </div>
       </div>
     </div>
 
