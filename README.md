@@ -33,10 +33,24 @@ Once your PDF is uploaded, you will be taken to the Project page. By default, yo
 ## Classifying Whitespace
 
 # PDF Segmentation Pipeline
+![image](https://user-images.githubusercontent.com/7800842/233430310-903f4995-a114-4e3c-8fad-e6b4f6fd3bb2.png)
+
 ## Extract Images
+![image](https://user-images.githubusercontent.com/7800842/233430358-f7734064-a8b0-446b-879a-1cfc8bf428ba.png)
+
 ## Split Pages
+![image](https://user-images.githubusercontent.com/7800842/233430550-0f4f56a0-fac6-4fd0-831f-eb52c7da608e.png)
+![image](https://user-images.githubusercontent.com/7800842/233430641-b74ae447-8dac-41c0-93a5-be51e919d2f9.png)
+
 ## Binarize
+![image](https://user-images.githubusercontent.com/7800842/233430859-4bb75b7b-d40a-4f3f-ba22-105a5613491f.png)
+
 ## Experiment with Thresholds
+![image](https://user-images.githubusercontent.com/7800842/233444209-71b86f45-5a35-460b-aa48-d02ed169b3d6.png)
+
 ## Build Rules & Separate
+![image](https://user-images.githubusercontent.com/7800842/233445028-867a8a65-b204-4500-b1b6-eb1c4b8be06e.png)
+
 ## Export Data
+
 ## Edit Entries
