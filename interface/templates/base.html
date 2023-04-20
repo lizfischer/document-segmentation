@@ -24,6 +24,8 @@
     <script type="text/javascript" src="{{ url_for('static', filename='js/taskRunner.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/nanobar.min.js') }}"></script>
 
+    <!-- Page=-specific scripts-->
+    {% block page_imports %}{% endblock %}
 
 </head>
 

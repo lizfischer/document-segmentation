@@ -1,5 +1,5 @@
 # Pycharm
-*/.idea/*
+.idea/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -139,9 +139,14 @@ input*
 
 temp/*
 
-interface/static/projects/*/annotations/*
-interface/static/projects/*/binary_images/*
-interface/static/projects/*/pdf_images/*
-interface/static/projects*
 
 *.db-journal
+interface/static/projects/*
+migrations/*
+migrations/alembic.ini
+migrations/env.py
+migrations/README
+migrations/script.py.mako
+migrations/versions/3039e0eb09b4_.py
+migrations/versions/6641779183e7_.py
+migrations/versions/861cb4e37250_.py
