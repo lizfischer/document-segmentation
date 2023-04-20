@@ -68,7 +68,8 @@ function update_progress(task_id, callback=null) {
             }
             else {
                 // something unexpected happened
-                $(status_div.childNodes[3]).text(data['state']);
+                // $(status_div.childNodes[3]).text(data['state']);
+                update_bar(percent, data['status']);
             }
         }
         else {

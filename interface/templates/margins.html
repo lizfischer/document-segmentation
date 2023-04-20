@@ -3,16 +3,10 @@
 {% block module %}
 <h2>Threshold Settings</h2>
 <form onsubmit="event.preventDefault()" id="">
-    <label for="h_width">Minimum width of a horizontal gap (higher = fewer gaps)</label>
+    <label for="h_width">Minimum width of a gap (higher = fewer gaps)</label>
     <input type="text" id="h_width" name="h_width" value="{{ thresh.h_width }}"><br>
-    <label for="h_blank">Maximum pct of blank pixels in a horizontal line to "count" it as blank (higher = more gaps)</label>
+    <label for="h_blank">Blankness sensitivity (value between 0 and 1; higher = more gaps)</label>
     <input type="text" id="h_blank" name="h_blank" value="{{ thresh.h_blank }}"><br>
-
-
-    <label for="v_width">Minimum width of a vertical gap</label>
-    <input type="text" id="v_width" name="v_width" value="{{ thresh.v_width }}"><br>
-    <label for="v_blank">Maximum pct of blank pixels in a vertical line to "count" it as blank</label>
-    <input type="text" id="v_blank" name="v_blank" value="{{ thresh.v_blank}}"><br>
 
     <br>
     <label for="preview">Preview results on: </label>
@@ -27,7 +21,7 @@
     <p id="warning-all" hidden class="warning">Warning! Previewing on all pages might take a while if your file is large.</p>
     <p id="warning-long" hidden class="warning">Warning! Previewing this many pages might take a while.</p>
     <br>
-    <button onclick="submitForm()" id="submit-button" type="button" class="btn btn-primary">Submit</button>
+    <button onclick="submitForm()" id="submit-button" type="button" class="btn btn-primary">Test thresholds</button>
 </form>
 
 <br>
@@ -47,7 +41,6 @@ $(document).ready(function (){
 function submitForm(){
     const specs = {
             "h_width": $("#h_width").val(), "h_blank": $("#h_blank").val(),
-            "v_width": $("#v_width").val(), "v_blank": $("#v_blank").val(),
             "preview": $("#preview").val(), "start": $("#start").val()-1, "end": $("#end").val()
         }
     $("#submit-button").attr('disabled', true);

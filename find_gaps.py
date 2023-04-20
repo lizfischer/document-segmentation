@@ -56,21 +56,21 @@ class Annotation:
 def whitespace_to_annotations(data, page):
     annotations = []
 
-    if data["vertical_gaps"]:
-        # First vertical gap, start at end of the gap
-        annotation = Annotation(data["vertical_gaps"][0]["end"], 0, 1, page.height)
-        annotations.append(annotation.json)
-
-        # Middle vertical gaps, give the midpoint
-        for v in data["vertical_gaps"][1:-1]:
-           x = v['start'] + v['width'] / 2
-           annotation = Annotation(x, 0, 1, page.height)
-           annotations.append(annotation.json)
-
-        # Last vertical gap, start at start of the gap
-        if len(data["vertical_gaps"]) > 2 :
-           annotation = Annotation(data["vertical_gaps"][-1]["start"], 0, 1, page.height)
-        annotations.append(annotation.json)
+    # if data["vertical_gaps"]:
+    #     # First vertical gap, start at end of the gap
+    #     annotation = Annotation(data["vertical_gaps"][0]["end"], 0, 1, page.height)
+    #     annotations.append(annotation.json)
+    #
+    #     # Middle vertical gaps, give the midpoint
+    #     for v in data["vertical_gaps"][1:-1]:
+    #        x = v['start'] + v['width'] / 2
+    #        annotation = Annotation(x, 0, 1, page.height)
+    #        annotations.append(annotation.json)
+    #
+    #     # Last vertical gap, start at start of the gap
+    #     if len(data["vertical_gaps"]) > 2 :
+    #        annotation = Annotation(data["vertical_gaps"][-1]["start"], 0, 1, page.height)
+    #     annotations.append(annotation.json)
 
     if data["horizontal_gaps"]:
         # First horizontal gap, start at end of the gap
