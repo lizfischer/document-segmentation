@@ -1,7 +1,13 @@
 {% extends "workflow.html" %}
 
 {% block module %}
-<h2>Threshold Settings</h2>
+<h2>Experiment with Threshold Settings</h2>
+
+Experiment with the values below to find settings that split the images in the desired locations.
+In the next step, you'll be able to specify threshold values to determine where entries split, <b>and</b> where to ignore text (e.g. above the first gap of X size to skip a header).
+<br>When you find numbers you're happy with, write them down (the tool does not remember for you)!
+<br><br>
+<h4>Threshold Settings</h4>
 <form onsubmit="event.preventDefault()" id="">
     <label for="h_width">Minimum width of a gap (higher = fewer gaps)</label>
     <input type="text" id="h_width" name="h_width" value="{{ thresh.h_width }}"><br>
