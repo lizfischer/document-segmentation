@@ -29,7 +29,7 @@ This software is released under a GNU General Public License v3.0. See `LICENSE`
 See the repository [wiki](https://github.com/lizfischer/document-segmentation/wiki/User-Guide) for a guide to using the tool.
 
 # Accuracy
-Preliminary ground-truth testing using inputs from four different source documents indicates this whitespace-based method of segmentation performs on average 57% better than textual pattern recognition (through regular expressions, or regex) alone. 
+Preliminary ground-truth testing using inputs from four different source documents indicates this whitespace-based method of segmentation performs on average 57% better than textual pattern recognition (through regular expressions) alone. 
 |           | Regex Only | Whitespace Segmentation |
 | --------- | ---------- | ----------------------- |
 | Precision | 45.12%     | 91.67%                  |
